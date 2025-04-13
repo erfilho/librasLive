@@ -1,0 +1,43 @@
+body {
+  background-color: #121212;
+  color: white;
+  text-align: center;
+  padding-top: 5rem;
+}
+
+#recordButton {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: none;
+  outline: none;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  fill: white;
+}
+
+svg {
+  color: white;
+}
+
+.idle {
+  background-color: #6c757d; /* cinza */
+  box-shadow: 0 0 10px rgba(108, 117, 125, 0.5);
+}
+
+.recording {
+  background-color: #d6336c; /* rosa escuro */
+}
+
+.stopping {
+  background-color: #ffc107; /* amarelo */
+}
+
+#timer {
+  margin-top: 1rem;
+  font-size: 1.5rem;
+  font-family: monospace;
+}
