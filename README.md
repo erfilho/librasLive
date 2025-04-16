@@ -1,4 +1,4 @@
-# 📘 LibrasLive
+# 📘 LibrasLive ( pendende validação )
 
 **Uma ferramenta de acessibilidade que traduz áudio em tempo real para Libras.**  
 Este projeto tem como objetivo facilitar a comunicação e inclusão de pessoas surdas em ambientes como salas de aula, palestras e reuniões.
