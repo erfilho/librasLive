@@ -10,6 +10,9 @@ __pycache__/
 # C extensions
 *.so
 
+# Others
+./backend/uploads/
+
 # Distribution / packaging
 .Python
 build/
@@ -19,6 +22,7 @@ downloads/
 eggs/
 .eggs/
 lib/
+Scripts/
 lib64/
 parts/
 sdist/
