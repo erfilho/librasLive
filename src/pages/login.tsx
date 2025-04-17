@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 
+import { handleGoogleLogin } from "../utils/login"; // Importa a função de login com Google
+
 import logoLibrasLive from "../assets/LibrasLive.png";
 
 export default function Login() {
@@ -10,10 +12,6 @@ export default function Login() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Login com:", email, senha);
-  };
-
-  const handleGoogleLogin = () => {
-    console.log("Login com Google");
   };
 
   return (
