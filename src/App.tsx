@@ -6,8 +6,10 @@ import Dashboard from "./pages/dashboard";
 import NewRecord from "./pages/newrecord";
 import NotFound from "./pages/notfound";
 
-import PrivateRoute from "./routes/privateroute";
+import PrivateRoute from "./routes/PrivateRoute";
 import { AuthProvider } from "./context/AuthContext";
+
+
 
 function App() {
   return (
