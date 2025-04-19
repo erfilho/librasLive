@@ -9,11 +9,12 @@ O **LibrasLive** permite que o usuário inicie uma gravação de áudio (como de
 
 Este projeto faz parte do Trabalho de Conclusão de Curso (TCC) de Erineldo Filho, aluno do curso de Bacharelado Ciências da Computação no Instituto Federal do Ceará - Campus Tianguá.
 
-## 🚀 Tecnologias Utilizadas ( em andamento )
+## 🚀 Tecnologias Utilizadas
 
 - **Node.js** – Backend e controle da gravação de áudio
 - **TypeScript** – Tipagem estática e maior segurança no desenvolvimento
 - **React** – Interface do usuário
+- **Tailwind CSS** – Framework visual
 - **Firebase** – Armazenamento e autenticação (se aplicável)
 - **API de Reconhecimento de Voz** – Transcrição de áudio (Google Speech-to-Text, Whisper, etc)
 - **VLibras** – Tradução do conteúdo textual para Libras

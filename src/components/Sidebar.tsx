@@ -9,6 +9,8 @@ import logoLibrasLive from "../assets/LibrasLive.png";
 import { logoutSample } from "../utils/logout";
 import { useState } from "react";
 
+import { Link } from "react-router-dom";
+
 import { JSX } from "react";
 
 export default function Sidebar() {
@@ -17,7 +19,7 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
-  
+
   return (
     <div>
       <aside
@@ -37,19 +39,27 @@ export default function Sidebar() {
         </div>
 
         <nav className="flex flex-col gap-4">
-          <SidebarItem
-            icon={<FolderIcon className="h-5 w-5" />}
-            label="Minhas Gravações"
-          />
+          <Link to="/dashboard">
+            <SidebarItem
+              icon={<FolderIcon className="h-5 w-5" />}
+              label="Minhas Gravações"
+            />
+          </Link>
 
-          <SidebarItem
-            icon={<MicrophoneIcon className="h-5 w-5" />}
-            label="Nova transcrição"
-          />
-          <SidebarItem
-            icon={<Cog6ToothIcon className="h-5 w-5" />}
-            label="Configurações"
-          />
+          <Link to="/newrecord">
+            <SidebarItem
+              icon={<MicrophoneIcon className="h-5 w-5" />}
+              label="Nova transcrição"
+            />
+          </Link>
+
+          <Link to="/settings">
+            <SidebarItem
+              icon={<Cog6ToothIcon className="h-5 w-5" />}
+              label="Configurações"
+            />
+          </Link>
+
           <SidebarItem
             icon={<PowerIcon className="h-5 w-5" />}
             label="Sair"

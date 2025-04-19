@@ -4,7 +4,7 @@ import Sidebar from "../components/Sidebar";
 
 export default function Dashboard() {
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-blue-500">
       {/* Sidebar */}
       <Sidebar />
       {/* Conteúdo principal */}
@@ -15,7 +15,10 @@ export default function Dashboard() {
         </button>
 
         {/* Lista das gravações do usuário */}
-        <h1 className="text-2xl font-bold mb-4 mt-12"> Minhas gravações </h1>
+        <h1 className="text-2xl text-white font-bold mb-4 mt-12">
+          {" "}
+          Minhas gravações{" "}
+        </h1>
         <RecordingsList />
       </div>
     </div>
