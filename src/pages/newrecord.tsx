@@ -1,6 +1,5 @@
 import Sidebar from "../components/Sidebar";
 import AudioRecorder from "../components/AudioRecorder";
-import SpeechComponent from "../components/SpeechComponent";
 
 export default function NewRecord() {
   return (
