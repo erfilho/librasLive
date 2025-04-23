@@ -1,5 +1,6 @@
 import Sidebar from "../components/Sidebar";
 import AudioRecorder from "../components/AudioRecorder";
+import SpeechComponent from "../components/SpeechComponent";
 
 export default function NewRecord() {
   return (
@@ -26,6 +27,7 @@ export default function NewRecord() {
           <label className="block text-base italic font-medium mb-1">
             Transcrição
           </label>
+          <SpeechComponent />
           <textarea
             className="w-full h-3/5 p-3 text-black rounded-lg bg-blue-300 resize-none"
             placeholder="A transcrição aparecerá aqui..."
