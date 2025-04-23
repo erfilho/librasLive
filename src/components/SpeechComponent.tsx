@@ -66,6 +66,11 @@ const SpeechComponent: React.FC = () => {
         Stop Listening
       </button>
       <p>{text}</p>
+      <textarea
+        className="w-full h-3/5 p-3 text-black rounded-lg bg-blue-300 resize-none"
+        placeholder="A transcrição aparecerá aqui..."
+        value={text}
+      ></textarea>
     </div>
   );
 };

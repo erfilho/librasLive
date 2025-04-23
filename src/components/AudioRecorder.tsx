@@ -1,36 +1,78 @@
-import { useRef, useState } from "react";
-
+import { useRef, useState, useEffect } from "react";
 import { MicrophoneIcon, StopIcon } from "@heroicons/react/24/outline";
 
 interface AudioRecorderProps {
   onSave?: (audioBlob: Blob) => void;
 }
 
+interface TranscriptLine {
+  time: number; // segundos
+  text: string;
+}
+
 export default function AudioRecorder({ onSave }: AudioRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
-
-  const [mediaStream, setMediaStrem] = useState<MediaStream | null>(null);
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
     null
   );
-
   const [audioURL, setAudioURL] = useState<string | null>(null);
-
   const audioChunksRef = useRef<Blob[]>([]);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+
+  const [transcriptList, setTranscriptList] = useState<TranscriptLine[]>([]);
+  const recordingStartTime = useRef<number>(0);
+  const lastTranscriptRef = useRef<string>("");
+
+  useEffect(() => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = "pt-BR";
+
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        const result = event.results[event.resultIndex][0].transcript.trim();
+
+        if (result && result !== lastTranscriptRef.current) {
+          const timeSinceStart = Math.floor(
+            (Date.now() - recordingStartTime.current) / 1000
+          );
+          setTranscriptList((prev) => [
+            ...prev,
+            { time: timeSinceStart, text: result },
+          ]);
+          lastTranscriptRef.current = result;
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error("Erro no reconhecimento de fala:", event.error);
+      };
+
+      recognitionRef.current = recognition;
+    }
+
+    return () => {
+      recognitionRef.current?.abort();
+    };
+  }, []);
 
   const startRecording = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-    });
-
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const mediaRecorder = new MediaRecorder(stream);
 
-    setMediaStrem(stream);
+    setMediaStream(stream);
     setMediaRecorder(mediaRecorder);
+    setTranscriptList([]);
+    setIsRecording(true);
+    recordingStartTime.current = Date.now();
 
     mediaRecorder.start();
-    setIsRecording(true);
-
     audioChunksRef.current = [];
 
     mediaRecorder.ondataavailable = (event) => {
@@ -40,24 +82,27 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
     mediaRecorder.onstop = () => {
       const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
       const url = URL.createObjectURL(audioBlob);
-
       setAudioURL(url);
 
       if (onSave) {
         onSave(audioBlob);
       }
     };
+
+    recognitionRef.current?.start();
   };
 
   const stopRecording = () => {
-    if (mediaRecorder) {
-      setIsRecording(false);
-      mediaRecorder.stop();
-    }
+    setIsRecording(false);
+    mediaRecorder?.stop();
+    mediaStream?.getTracks().forEach((track) => track.stop());
+    recognitionRef.current?.stop();
+  };
 
-    if (mediaStream) {
-      mediaStream.getTracks().forEach((track) => track.stop());
-    }
+  const formatTime = (seconds: number) => {
+    const min = String(Math.floor(seconds / 60)).padStart(2, "0");
+    const sec = String(seconds % 60).padStart(2, "0");
+    return `${min}:${sec}`;
   };
 
   return (
@@ -66,7 +111,6 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
         <button
           className="bg-white hover:bg-blue-300 text-black px-4 py-2 rounded flex items-center justify-center gap-2 w-1/6"
           onClick={stopRecording}
-          disabled={!isRecording}
         >
           <StopIcon className="h-5 w-5" />
           Parar
@@ -80,8 +124,25 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
           Iniciar
         </button>
       )}
+
       {audioURL && (
         <audio controls src={audioURL} className="w-full max-w-md mt-2" />
+      )}
+
+      {transcriptList.length > 0 && (
+        <div className="bg-blue-300  rounded py-1 px-4 max-w-3/4 h-3/5">
+          <h3 className="text-lg font-semibold mb-2">Transcrição:</h3>
+          <ul className="space-y-1 text-gray-700 text-md">
+            {transcriptList.map((line, index) => (
+              <li key={index}>
+                <span className="font-mono text-blue-700">
+                  [{formatTime(line.time)}]
+                </span>{" "}
+                {line.text}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );
