@@ -1,14 +1,28 @@
 import Sidebar from "../components/Sidebar";
 import AudioRecorder from "../components/AudioRecorder";
+import VLibrasPlayer, {
+  VLibrasPlayerHandle,
+} from "../components/VLibrasPlayer";
+
+import { useRef, useState } from "react";
 
 export default function NewRecord() {
+  const playerRef = useRef<VLibrasPlayerHandle>(null);
+  const [text, setText] = useState("");
+
+  const handleTranslate = () => {
+    if (playerRef.current) {
+      playerRef.current.translate(text);
+    }
+  };
+
   return (
-    <div className="flex h-screen">
+    <div className="flex flex-row h-screen">
       <Sidebar />
 
-      <main className="flex-1 bg-blue-500 p-6  text-white grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <main className="flex flex-row bg-blue-500 p-6  text-white gap-6 w-full">
         {/* Left side */}
-        <section className="ml-32 mt-12 px-4">
+        <section className="ml-32 mt-12 px-4 w-1/2">
           <h1 className="text-2xl font-bold mb-2">Nova transcrição</h1>
 
           <label className="block text-lg font-bold mb-1">
@@ -22,18 +36,24 @@ export default function NewRecord() {
           />
 
           <AudioRecorder />
+          <textarea
+            className="border w-full p-2 text-black"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Digite seu texto aqui"
+          />
+          <button
+            onClick={handleTranslate}
+            className="mt-2 px-4 py-2 bg-green-600 text-white"
+          >
+            Traduzir com VLibras
+          </button>
         </section>
 
         {/* Right side */}
-        <section className="mx-4 mt-12 px-12">
+        <section className="mx-4 mt-12 px-12 w-1/2">
           <h2 className="text-2xl font-bold mb-2">Player vLibras</h2>
-          <div className="bg-blue-300 rounded-lg p-4 flex items-center justify-center h-[calc(100%-2rem)]">
-            <img
-              src="../assets/vlibras-placeholder.png"
-              alt="vLibras player"
-              className="object-contain max-h-full"
-            />
-          </div>
+          <VLibrasPlayer ref={playerRef} />
         </section>
       </main>
     </div>

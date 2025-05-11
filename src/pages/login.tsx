@@ -4,6 +4,7 @@ import { FcGoogle } from "react-icons/fc";
 import { useGoogleLogin } from "../utils/login"; // Importa a função de login com Google
 
 import logoLibrasLive from "../assets/LibrasLive.png";
+import { Link } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -73,7 +74,7 @@ export default function Login() {
 
           <button
             onClick={googleLogin}
-            className="flex items-center justify-center gap-2 cursor-pointer bg-white text-black py-2 rounded-full self-center font-medium hover:bg-gray-200 xl:w-1/2 md:w-3/4 sm:w-1/2 transition"
+            className="flex items-center justify-center gap-2 cursor-pointer bg-white text-black py-2 rounded-full self-center font-medium hover:bg-gray-200 xl:w-1/2 md:w-2/4 sm:w-3/4 transition"
           >
             <FcGoogle className="text-xl" />
             Login com Google
@@ -84,7 +85,10 @@ export default function Login() {
             className="flexflex-row items-center justify-center gap-2 self-center cursor-pointer text-white py-2 font-medium w-full"
           >
             <p> Ainda não tem conta ?</p>{" "}
-            <p className="font-bold"> Cadastre-se</p>{" "}
+            <p className="font-bold underline">
+              {" "}
+              <Link to={"/Register"}> Cadastre-se </Link>{" "}
+            </p>{" "}
           </button>
         </div>
       </div>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VLibras Translate</title>
+    <link rel="stylesheet" href="./css/main.css">
+</head>
+
+<body>
+    <div id="root">
+        <div class="container">
+            <div>
+                <h1>Faça uma pergunta</h1>
+                <form id="form">
+                    <textarea id="form-input" class="input" rows="3" placeholder="Digite sua pergunta aqui" autocomplete="off"></textarea>
+                    <button id="form-button" class="button" type="submit">Enviar</button>
+                </form>
+            </div>
+
+            <div class="content">
+                <div id="window">
+                    <div id="wrapper"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./vlibras.js"></script>
+    <script>
+        const wrapper = document.getElementById('wrapper');
+        const player = new VLibras.Player({
+            target: { name: 'rnp_webgl', path: './unity' }
+        });
+
+        player.on('load', function () {
+            console.log('Player loaded');
+        });
+
+        player.load(wrapper);
+    </script>
+
+    <script src="./js/uiControl.js" type="module"></script>
+</body>
+
+</html>

@@ -22,5 +22,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"]
+  "include": ["src", "public/vLibras", "public/vLibras", "public/vlibras.js", "public/unity"]
 }
