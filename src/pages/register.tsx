@@ -1,27 +1,66 @@
 import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
-
-import { useGoogleLogin } from "../utils/login";
 import logoLibrasLive from "../assets/LibrasLive.png";
-import { Link } from "react-router-dom";
 
-export default function Register() {
-  const [nome, setNome] = useState("");
+import { handleGoogleLogin, registerUser } from "../utils/auth";
+import { useNavigate } from "react-router-dom";
+
+const RegisterForm = () => {
   const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [confirmarSenha, setConfirmarSenha] = useState("");
+  const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [sucess, setSucess] = useState<string | null>(null);
 
-  const googleLogin = useGoogleLogin();
+  const googleLogin = async () => {
+    setLoading(true);
+    try {
+      await handleGoogleLogin();
+      setSucess("Cadastro com Google realizado com sucesso!");
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 5000);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (senha !== confirmarSenha) {
-      alert("As senhas não coincidem.");
+    setLoading(true);
+    setError(null);
+    setSucess(null);
+
+    if (password !== repeatPassword) {
+      setError("As senhas não coincidem.");
+      setLoading(false);
       return;
     }
 
-    console.log("Cadastro com:", { nome, email, senha });
-    // Aqui você pode chamar a função de cadastro da sua API
+    try {
+      await registerUser(email, password);
+      setSucess("Cadastro realizado com sucesso!");
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000);
+      setEmail("");
+      setPassword("");
+      setRepeatPassword("");
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate("/login");
   };
 
   return (
@@ -43,19 +82,47 @@ export default function Register() {
       {/* Right side */}
       <div className="lg:w-1/2 w-full lg:h-full h-3/4 flex items-center justify-center">
         <div className="lg:w-3/4 xl:w-3/5 w-full lg:h-3/4 h-full bg-blue-500 text-white p-10 lg:rounded-3xl flex flex-col justify-center shadow-2xl">
+          {loading && (
+            <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center z-10">
+              <img
+                src="/loading.gif"
+                alt="Carregando..."
+                className="w-16 h-16 mb-2"
+              />
+              <p className="text-white text-lg font-semibold animate-pulse">
+                Carregando...
+              </p>
+            </div>
+          )}
+
           <h2 className="text-3xl font-semibold text-center mb-6">Cadastro</h2>
           <form
-            onSubmit={handleRegister}
+            onSubmit={handleSubmit}
             className="flex flex-col gap-4 justify-center items-center"
           >
-            <input
-              type="text"
-              placeholder="Nome"
-              className="px-4 py-2 rounded-lg bg-blue-400 w-3/4 placeholder-white focus:outline-none"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              required
-            />
+            {error && (
+              <div
+                className="p-4 mb-4 text-sm flex flex-col justify-center items-center text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
+                role="alert"
+              >
+                <span className="font-medium">
+                  Erro <br />{" "}
+                </span>{" "}
+                {error}{" "}
+              </div>
+            )}
+            {sucess && (
+              <div
+                className="p-4 mb-4 text-sm flex flex-col justify-center items-center text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400"
+                role="alert"
+              >
+                <span className="font-medium">
+                  Cadastro concluído! <br />{" "}
+                </span>{" "}
+                {sucess} <br />
+                Você será redirecionado para a página de login.
+              </div>
+            )}
             <input
               type="email"
               placeholder="Email"
@@ -68,20 +135,21 @@ export default function Register() {
               type="password"
               placeholder="Senha"
               className="px-4 py-2 rounded-lg bg-blue-400 w-3/4 placeholder-white focus:outline-none"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
             />
             <input
               type="password"
               placeholder="Confirmar Senha"
               className="px-4 py-2 rounded-lg bg-blue-400 w-3/4 placeholder-white focus:outline-none"
-              value={confirmarSenha}
-              onChange={(e) => setConfirmarSenha(e.target.value)}
+              value={repeatPassword}
+              onChange={(e) => setRepeatPassword(e.target.value)}
               required
             />
             <button
               type="submit"
+              disabled={loading}
               className="bg-cyan-300 text-blue-900 py-2 rounded-lg font-bold hover:bg-cyan-200 transition w-1/3"
             >
               Cadastrar
@@ -98,14 +166,14 @@ export default function Register() {
             Cadastro com Google
           </button>
 
-          <p className="mt-4 text-center">
-            Já tem conta?{" "}
-            <Link to="/" className="font-bold underline">
-              Fazer login
-            </Link>
-          </p>
+          <button onClick={handleLogin} className="mt-4 text-center ">
+            Já tem conta? <br />
+            <span className="font-bold underline"> Fazer login </span>
+          </button>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default RegisterForm;
