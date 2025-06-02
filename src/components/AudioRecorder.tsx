@@ -1,5 +1,8 @@
 import { useRef, useState, useEffect } from "react";
 import { MicrophoneIcon, StopIcon } from "@heroicons/react/24/outline";
+import { saveTranscription } from "../services/firestoreService";
+import { useAuth } from "../context/AuthContext";
+import { Timestamp } from "firebase/firestore";
 
 interface AudioRecorderProps {
   onSave?: (audioBlob: Blob) => void;
@@ -11,6 +14,8 @@ interface TranscriptLine {
 }
 
 export default function AudioRecorder({ onSave }: AudioRecorderProps) {
+  const { user } = useAuth();
+
   const [isRecording, setIsRecording] = useState(false);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
@@ -92,7 +97,29 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
     recognitionRef.current?.start();
   };
 
-  const stopRecording = () => {
+  const handleSave = async (
+    audioUrl: string,
+    classRef: string,
+    transcript: string
+  ) => {
+    if (!user) return;
+
+    await saveTranscription({
+      userId: user.uid,
+      audioUrl,
+      classRef, // Replace with actual class reference if needed
+      transcription: transcript,
+      createdAt: Timestamp.now(),
+    });
+  };
+
+  const stopRecording = async () => {
+    const audioUrl = "https://example.com/audio.mp3"; // Replace with actual audio URL
+    const classRef = "class123"; // Replace with actual class reference
+    const transcript = "This is a sample transcription"; // Replace with actual transcription text
+
+    await handleSave(audioUrl, classRef, transcript);
+
     setIsRecording(false);
     mediaRecorder?.stop();
     mediaStream?.getTracks().forEach((track) => track.stop());
