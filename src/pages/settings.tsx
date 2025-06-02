@@ -1,5 +1,4 @@
 import { Bars3Icon } from "@heroicons/react/24/outline";
-import RecordingsList from "../components/RecordingsList";
 import Sidebar from "../components/Sidebar";
 
 export default function Settings() {
