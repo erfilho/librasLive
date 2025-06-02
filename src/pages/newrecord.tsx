@@ -22,7 +22,7 @@ export default function NewRecord() {
 
       <main className="flex flex-row bg-blue-500 p-6  text-white gap-6 w-full">
         {/* Left side */}
-        <section className="ml-32 mt-12 px-4 w-1/2">
+        <section className="ml-16 mt-12 px-4 w-1/2">
           <h1 className="text-2xl font-bold mb-2">Nova transcrição</h1>
 
           <label className="block text-lg font-bold mb-1">
@@ -51,7 +51,7 @@ export default function NewRecord() {
         </section>
 
         {/* Right side */}
-        <section className="mx-4 mt-12 px-12 w-1/2">
+        <section className="mx-4 mt-12 px-12 w-1/3">
           <h2 className="text-2xl font-bold mb-2">Player vLibras</h2>
           <VLibrasPlayer ref={playerRef} />
         </section>
