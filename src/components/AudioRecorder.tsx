@@ -97,23 +97,25 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
     recognitionRef.current?.start();
   };
 
+  // Função para salvar a transcrição no Firestore ( precisa de ajustes )
   const handleSave = async (
     audioUrl: string,
     classRef: string,
-    transcript: string
+    transcription: string
   ) => {
     if (!user) return;
 
     await saveTranscription({
       userId: user.uid,
       audioUrl,
-      classRef, // Replace with actual class reference if needed
-      transcription: transcript,
+      classRef,
+      transcription,
       createdAt: Timestamp.now(),
     });
   };
 
   const stopRecording = async () => {
+    // Simulando a obtenção de dados para salvar
     const audioUrl = "https://example.com/audio.mp3"; // Replace with actual audio URL
     const classRef = "class123"; // Replace with actual class reference
     const transcript = "This is a sample transcription"; // Replace with actual transcription text
