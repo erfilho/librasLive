@@ -16,6 +16,8 @@ interface TranscriptLine {
 export default function AudioRecorder({ onSave }: AudioRecorderProps) {
   const { user } = useAuth();
 
+  const [title, setTitle] = useState("");
+
   const [isRecording, setIsRecording] = useState(false);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
@@ -117,7 +119,7 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
   const stopRecording = async () => {
     // Simulando a obtenção de dados para salvar
     const audioUrl = "https://example.com/audio.mp3"; // Replace with actual audio URL
-    const classRef = "class123"; // Replace with actual class reference
+    const classRef = title; // Replace with actual class reference
     const transcript = "This is a sample transcription"; // Replace with actual transcription text
 
     await handleSave(audioUrl, classRef, transcript);
@@ -136,13 +138,24 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
 
   return (
     <div className="flex flex-col gap-4 mb-6">
+      <label className="block text-lg font-bold mb-1">
+        {" "}
+        Título da gravação{" "}
+      </label>
+      <input
+        type="text"
+        placeholder="Título da gravação"
+        className="w-full rounded-lg p-2 text-black mb-4"
+        onChange={(e) => setTitle(e.target.value)}
+      />
+
       {isRecording ? (
         <button
-          className="bg-white hover:bg-blue-300 text-black px-4 py-2 rounded flex items-center justify-center gap-2 w-1/6"
+          className="bg-white hover:bg-blue-300 text-black px-4 py-2 rounded flex items-center justify-around gap-2 w-4/12"
           onClick={stopRecording}
         >
           <StopIcon className="h-5 w-5" />
-          Parar
+          Parar e salvar
         </button>
       ) : (
         <button

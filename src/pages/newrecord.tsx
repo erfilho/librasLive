@@ -25,16 +25,6 @@ export default function NewRecord() {
         <section className="ml-16 mt-12 px-4 w-1/2">
           <h1 className="text-2xl font-bold mb-2">Nova transcrição</h1>
 
-          <label className="block text-lg font-bold mb-1">
-            {" "}
-            Título da gravação{" "}
-          </label>
-          <input
-            type="text"
-            placeholder="Título da gravação"
-            className="w-full rounded-lg p-2 text-black mb-4"
-          />
-
           <AudioRecorder />
           <textarea
             className="border w-full p-2 text-black"
