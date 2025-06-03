@@ -1,5 +1,9 @@
 import { useRef, useState, useEffect } from "react";
-import { MicrophoneIcon, StopIcon } from "@heroicons/react/24/outline";
+import {
+  MicrophoneIcon,
+  StopIcon,
+  CloudArrowUpIcon,
+} from "@heroicons/react/24/outline";
 import { saveTranscription } from "../services/firestoreService";
 import { useAuth } from "../context/AuthContext";
 import { Timestamp } from "firebase/firestore";
@@ -17,6 +21,8 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
   const { user } = useAuth();
 
   const [title, setTitle] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [isRecording, setIsRecording] = useState(false);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
@@ -70,6 +76,13 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
   }, []);
 
   const startRecording = async () => {
+    if (title === "") {
+      setError("Por favor, insira um título para a gravação.");
+      return;
+    } else {
+      setError(null);
+    }
+
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const mediaRecorder = new MediaRecorder(stream);
 
@@ -77,6 +90,7 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
     setMediaRecorder(mediaRecorder);
     setTranscriptList([]);
     setIsRecording(true);
+
     recordingStartTime.current = Date.now();
 
     mediaRecorder.start();
@@ -107,6 +121,7 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
   ) => {
     if (!user) return;
 
+    setIsSaving(true);
     await saveTranscription({
       userId: user.uid,
       audioUrl,
@@ -114,20 +129,21 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
       transcription,
       createdAt: Timestamp.now(),
     });
+    setIsSaving(false);
   };
 
   const stopRecording = async () => {
-    // Simulando a obtenção de dados para salvar
-    const audioUrl = "https://example.com/audio.mp3"; // Replace with actual audio URL
-    const classRef = title; // Replace with actual class reference
-    const transcript = "This is a sample transcription"; // Replace with actual transcription text
-
-    await handleSave(audioUrl, classRef, transcript);
-
     setIsRecording(false);
     mediaRecorder?.stop();
     mediaStream?.getTracks().forEach((track) => track.stop());
     recognitionRef.current?.stop();
+
+    // Simulando a obtenção de dados para salvar
+    const audioUrl = "https://example.com/audio.mp3"; // Replace with actual audio URL
+    const classRef = title; // Replace with actual class reference
+    const transcript = "teste"; // Replace with actual transcription text
+
+    await handleSave(audioUrl, classRef, transcript);
   };
 
   const formatTime = (seconds: number) => {
@@ -138,6 +154,19 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
 
   return (
     <div className="flex flex-col gap-4 mb-6">
+      {error && (
+        <div className="bg-red-200 text-red-800 p-2 rounded mb-4 text-center">
+          {error}
+        </div>
+      )}
+
+      {isSaving && (
+        <div className="bg-blue-200 text-green-500 p-2 rounded mb-4 text-center flex items-center justify-center gap-2">
+          <CloudArrowUpIcon className="h-5 w-5" />
+          Salvando...
+        </div>
+      )}
+
       <label className="block text-lg font-bold mb-1">
         {" "}
         Título da gravação{" "}
@@ -149,23 +178,25 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
         onChange={(e) => setTitle(e.target.value)}
       />
 
-      {isRecording ? (
-        <button
-          className="bg-white hover:bg-blue-300 text-black px-4 py-2 rounded flex items-center justify-around gap-2 w-4/12"
-          onClick={stopRecording}
-        >
-          <StopIcon className="h-5 w-5" />
-          Parar e salvar
-        </button>
-      ) : (
-        <button
-          className="bg-white hover:bg-green-300 text-black px-4 py-2 rounded flex items-center justify-center gap-2 w-1/6"
-          onClick={startRecording}
-        >
-          <MicrophoneIcon className="h-5 w-5" />
-          Iniciar
-        </button>
-      )}
+      <div className="flex items-center justify-start gap-2 mb-4">
+        {isRecording ? (
+          <button
+            className="bg-white hover:bg-blue-300 text-black px-4 py-2 rounded flex items-center justify-around gap-2 w-4/12"
+            onClick={stopRecording}
+          >
+            <StopIcon className="h-5 w-5" />
+            Parar e salvar
+          </button>
+        ) : (
+          <button
+            className="bg-white hover:bg-green-300 text-black px-4 py-2 rounded flex items-center justify-center gap-2 w-1/6"
+            onClick={startRecording}
+          >
+            <MicrophoneIcon className="h-5 w-5" />
+            Iniciar
+          </button>
+        )}
+      </div>
 
       {audioURL && (
         <audio controls src={audioURL} className="w-full max-w-md mt-2" />

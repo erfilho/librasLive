@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
+import { deleteTranscription } from "../services/firestoreService";
 import { useAuth } from "../context/AuthContext";
 
 const ITEMS_PER_PAGE = 16;
@@ -50,6 +51,7 @@ export default function RecordingsList() {
           date: doc.data().createdAt.toDate().toLocaleDateString("pt-BR"),
           duration: doc.data().transcription,
         }));
+        console.log(querySnapshot);
         setRecordings(fetchedRecordings);
       } catch (error) {
         console.error("Erro ao buscar gravações:", error);
@@ -57,6 +59,19 @@ export default function RecordingsList() {
     };
     fetchRecordings();
   }, [user]);
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteTranscription(id);
+      setRecordings((prev) => prev.filter((rec) => rec.id !== id));
+      if (currentItems.length === 1 && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      }
+    } catch (error) {
+      console.error("Erro ao excluir gravação:", error);
+      alert("Erro ao excluir gravação. Tente novamente.");
+    }
+  };
 
   return (
     <div className="flex flex-col justify-between h-5/6">
@@ -69,7 +84,7 @@ export default function RecordingsList() {
             date={rec.date}
             duration={rec.duration}
             onWatch={() => alert(`Assistir: ${rec.title}`)}
-            onDelete={() => alert(`Excluir: ${rec.title}`)}
+            onDelete={() => handleDelete(rec.id)}
           />
         ))}
       </div>
