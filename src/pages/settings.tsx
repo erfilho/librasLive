@@ -7,7 +7,7 @@ export default function Settings() {
       {/* Sidebar */}
       <Sidebar />
       {/* Conteúdo principal */}
-      <div className="flex-1 p-2 md:ml-16">
+      <div className="flex-1 p-2 md:ml-16 w-[calc(100% - 4rem)]">
         {/* Botão para abrir a sidebar no mobile */}
         <button className="md:hidden mb-4 text-gray-500">
           <Bars3Icon className="h-6 w-6" />

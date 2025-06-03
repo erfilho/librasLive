@@ -20,9 +20,9 @@ export default function NewRecord() {
     <div className="flex flex-row h-screen">
       <Sidebar />
 
-      <main className="flex flex-row bg-blue-500 p-6  text-white gap-6 w-full">
+      <div className="flex flex-row bg-blue-500 p-6 text-white w-dvw">
         {/* Left side */}
-        <section className="ml-16 mt-12 px-4 w-1/2">
+        <div className="ml-16 mt-12 px-4 w-1/2">
           <h1 className="text-2xl font-bold mb-2">Nova transcrição</h1>
 
           <AudioRecorder />
@@ -38,14 +38,14 @@ export default function NewRecord() {
           >
             Traduzir com VLibras
           </button>
-        </section>
+        </div>
 
         {/* Right side */}
-        <section className="mx-4 mt-12 px-12 w-1/3">
+        <div className="mx-4 mt-12 px-12 w-1/2">
           <h2 className="text-2xl font-bold mb-2">Player vLibras</h2>
           <VLibrasPlayer ref={playerRef} />
-        </section>
-      </main>
+        </div>
+      </div>
     </div>
   );
 }
