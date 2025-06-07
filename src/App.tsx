@@ -4,6 +4,7 @@ import Login from "./pages/login";
 import Register from "./pages/register";
 import Dashboard from "./pages/dashboard";
 import NewRecord from "./pages/newrecord";
+import Player from "./pages/player";
 import Settings from "./pages/settings";
 import NotFound from "./pages/notfound";
 
@@ -31,6 +32,14 @@ function App() {
           element={
             <PrivateRoute>
               <NewRecord />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/player"
+          element={
+            <PrivateRoute>
+              <Player />
             </PrivateRoute>
           }
         />

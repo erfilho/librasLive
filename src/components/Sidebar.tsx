@@ -4,6 +4,7 @@ import {
   XMarkIcon,
   FolderIcon,
   MicrophoneIcon,
+  PlayCircleIcon,
 } from "@heroicons/react/24/outline";
 import logoLibrasLive from "../assets/LibrasLive.png";
 import { logoutSample } from "../utils/logout";
@@ -50,6 +51,13 @@ export default function Sidebar() {
             <SidebarItem
               icon={<MicrophoneIcon className="h-5 w-5" />}
               label="Nova transcrição"
+            />
+          </Link>
+
+          <Link to="/player">
+            <SidebarItem
+              icon={<PlayCircleIcon className="h-5 w-5" />}
+              label="Player"
             />
           </Link>
 
