@@ -1,5 +1,6 @@
 import Sidebar from "../components/Sidebar";
 import AudioRecorder from "../components/AudioRecorder";
+
 import VLibrasPlayer, {
   VLibrasPlayerHandle,
 } from "../components/VLibrasPlayer";
@@ -10,7 +11,19 @@ export default function NewRecord() {
   const playerRef = useRef<VLibrasPlayerHandle>(null);
   const [text, setText] = useState("");
 
-  const handleTranslate = () => {
+  const handleTranslate = async () => {
+    const result = await fetch("http://localhost:3001/translate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text }),
+    });
+
+    const data = await result.json();
+    setText(data.translation);
+    console.log("Texto traduzido:", data.translation);
+
     if (playerRef.current) {
       playerRef.current.translate(text);
     }
