@@ -49,7 +49,8 @@ export default function RecordingsList() {
           id: doc.id,
           title: doc.data().classRef,
           date: doc.data().createdAt.toDate().toLocaleDateString("pt-BR"),
-          duration: doc.data().transcription,
+          duration: doc.data().duration,
+          url: doc.data().audioUrl,
         }));
         console.log(querySnapshot);
         setRecordings(fetchedRecordings);
@@ -83,7 +84,8 @@ export default function RecordingsList() {
             title={rec.title}
             date={rec.date}
             duration={rec.duration}
-            onWatch={() => alert(`Assistir: ${rec.title}`)}
+            url={rec.url}
+            onWatch={() => alert(`Assistir: ${rec.url}`)}
             onDelete={() => handleDelete(rec.id)}
           />
         ))}

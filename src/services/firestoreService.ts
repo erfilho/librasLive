@@ -1,4 +1,4 @@
-import { db } from "../firebase";
+import { app, db } from "../firebase";
 import {
   collection,
   addDoc,
@@ -7,13 +7,36 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
 export interface AudioTranscription {
   userId: string;
   audioUrl: string;
   classRef: string;
+  duration: string;
   transcription: string;
+  translated: string;
   createdAt: Timestamp;
 }
+
+export const uploadAudioFile = async (
+  audioBlob: Blob,
+  filename: string
+): Promise<string> => {
+  try {
+    const storage = getStorage(app);
+    const audioRef = ref(storage, `audio/${filename}`);
+
+    await uploadBytes(audioRef, audioBlob);
+
+    const downloadUrl = await getDownloadURL(audioRef);
+
+    return downloadUrl;
+  } catch (error) {
+    console.error("Error uploading audio file: ", error);
+    throw new Error("Failed to upload audio file");
+  }
+};
 
 export const saveTranscription = async (transcription: AudioTranscription) => {
   try {

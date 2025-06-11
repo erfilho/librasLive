@@ -10,6 +10,7 @@ interface RecordingCardProps {
   title: string;
   date: string;
   duration: string;
+  url: string;
   onWatch: () => void;
   onDelete: () => void;
 }
@@ -18,6 +19,7 @@ export default function RecordingCard({
   title,
   date,
   duration,
+  url,
   onWatch,
   onDelete,
 }: RecordingCardProps) {

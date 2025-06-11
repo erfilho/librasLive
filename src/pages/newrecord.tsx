@@ -29,6 +29,12 @@ export default function NewRecord() {
     }
   };
 
+  const handleTestvLibras = () => {
+    if (playerRef.current) {
+      playerRef.current.translate(text);
+    }
+  };
+
   return (
     <div className="flex flex-row h-screen">
       <Sidebar />
@@ -47,9 +53,15 @@ export default function NewRecord() {
           />
           <button
             onClick={handleTranslate}
-            className="mt-2 px-4 py-2 bg-green-600 text-white"
+            className="mt-2 mx-2 px-4 py-2 bg-green-600 text-white"
           >
             Traduzir com VLibras
+          </button>
+          <button
+            onClick={handleTestvLibras}
+            className="mt-2 mx-2 px-4 py-2 bg-green-600 text-white"
+          >
+            Testar o VLibras
           </button>
         </div>
 

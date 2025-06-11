@@ -4,7 +4,10 @@ import {
   StopIcon,
   CloudArrowUpIcon,
 } from "@heroicons/react/24/outline";
-import { saveTranscription } from "../services/firestoreService";
+import {
+  saveTranscription,
+  uploadAudioFile,
+} from "../services/firestoreService";
 import { useAuth } from "../context/AuthContext";
 import { Timestamp } from "firebase/firestore";
 
@@ -33,6 +36,21 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
   const audioChunksRef = useRef<Blob[]>([]);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
+  const handleError = (error: string) => {
+    console.error("Erro:", error);
+    setError(error);
+  };
+
+  const translateText = async (text: string): Promise<string> => {
+    // Simulação - substitua pela chamada real de API se necessário
+    console.log(`TRADUZIDO: ${text}`);
+    return `Tradução de: ${text}`;
+  };
+
+  const [translatedTranscriptList, setTranslatedTranscriptList] = useState<
+    { time: number; original: string; translated: string }[]
+  >([]);
+
   const [transcriptList, setTranscriptList] = useState<TranscriptLine[]>([]);
   const recordingStartTime = useRef<number>(0);
   const lastTranscriptRef = useRef<string>("");
@@ -45,26 +63,38 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
       recognition.continuous = true;
-      recognition.interimResults = true;
+      recognition.interimResults = false;
       recognition.lang = "pt-BR";
 
-      recognition.onresult = (event: SpeechRecognitionEvent) => {
+      recognition.onresult = async (event: SpeechRecognitionEvent) => {
         const result = event.results[event.resultIndex][0].transcript.trim();
 
         if (result && result !== lastTranscriptRef.current) {
           const timeSinceStart = Math.floor(
             (Date.now() - recordingStartTime.current) / 1000
           );
+
           setTranscriptList((prev) => [
             ...prev,
             { time: timeSinceStart, text: result },
           ]);
           lastTranscriptRef.current = result;
+
+          // Tradução assíncrona
+          try {
+            const translated = await translateText(result);
+            setTranslatedTranscriptList((prev) => [
+              ...prev,
+              { time: timeSinceStart, original: result, translated },
+            ]);
+          } catch (err) {
+            handleError(`"Erro ao traduzir:" ${err}`);
+          }
         }
       };
 
       recognition.onerror = (event: any) => {
-        console.error("Erro no reconhecimento de fala:", event.error);
+        handleError(`Erro no reconhecimento de fala:, ${event.error}`);
       };
 
       recognitionRef.current = recognition;
@@ -117,16 +147,31 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
   const handleSave = async (
     audioUrl: string,
     classRef: string,
-    transcription: string
+    duration: number,
+    originalTranscriptList: {
+      time: number;
+      original: string;
+      translated: string;
+    }[]
   ) => {
     if (!user) return;
+
+    const transcription = originalTranscriptList
+      .map((line) => `[${formatTime(line.time)}] ${line.original}`)
+      .join("\n");
+
+    const translation = originalTranscriptList
+      .map((line) => `[${formatTime(line.time)}] ${line.translated}`)
+      .join("\n");
 
     setIsSaving(true);
     await saveTranscription({
       userId: user.uid,
       audioUrl,
       classRef,
+      duration: formatTime(duration),
       transcription,
+      translated: translation,
       createdAt: Timestamp.now(),
     });
     setIsSaving(false);
@@ -138,12 +183,25 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
     mediaStream?.getTracks().forEach((track) => track.stop());
     recognitionRef.current?.stop();
 
-    // Simulando a obtenção de dados para salvar
-    const audioUrl = "https://example.com/audio.mp3"; // Replace with actual audio URL
-    const classRef = title; // Replace with actual class reference
-    const transcript = "teste"; // Replace with actual transcription text
+    const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
+    const filename = `${user?.uid}_${Date.now()}.wav`;
 
-    await handleSave(audioUrl, classRef, transcript);
+    const durationSeconds = Math.floor(
+      (Date.now() - recordingStartTime.current) / 1000
+    );
+
+    try {
+      const audioUrl = await uploadAudioFile(audioBlob, filename);
+      const classRef = title; // Replace with actual class reference
+      await handleSave(
+        audioUrl,
+        classRef,
+        durationSeconds,
+        translatedTranscriptList
+      );
+    } catch (err) {
+      handleError(`Erro ao salvar a gravação: ${err}`);
+    }
   };
 
   const formatTime = (seconds: number) => {
