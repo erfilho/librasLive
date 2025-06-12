@@ -2,9 +2,12 @@ import RecordingCard from "./RecordingCard";
 
 import { useEffect, useState } from "react";
 
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../firebase";
-import { deleteTranscription } from "../services/firestoreService";
+import {
+  deleteTranscription,
+  deleteAudioFile,
+  getTranscriptions,
+  AudioRecorder,
+} from "../services/firestoreService";
 import { useAuth } from "../context/AuthContext";
 
 const ITEMS_PER_PAGE = 16;
@@ -12,7 +15,7 @@ const ITEMS_PER_PAGE = 16;
 export default function RecordingsList() {
   const { user } = useAuth();
 
-  const [recordings, setRecordings] = useState<any[]>([]);
+  const [recordings, setRecordings] = useState<AudioRecorder[]>([]);
 
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -42,28 +45,20 @@ export default function RecordingsList() {
       if (!user) return;
 
       try {
-        const recordingsRef = collection(db, "recorders");
-        const q = query(recordingsRef, where("userId", "==", user.uid));
-        const querySnapshot = await getDocs(q);
-        const fetchedRecordings = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          title: doc.data().classRef,
-          date: doc.data().createdAt.toDate().toLocaleDateString("pt-BR"),
-          duration: doc.data().duration,
-          url: doc.data().audioUrl,
-        }));
-        console.log(querySnapshot);
-        setRecordings(fetchedRecordings);
+        const data = await getTranscriptions(user.uid);
+        setRecordings(data || []);
       } catch (error) {
         console.error("Erro ao buscar gravações:", error);
+        alert("Erro ao buscar gravações. Tente novamente.");
       }
     };
     fetchRecordings();
   }, [user]);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, filename: string) => {
     try {
       await deleteTranscription(id);
+      await deleteAudioFile(filename);
       setRecordings((prev) => prev.filter((rec) => rec.id !== id));
       if (currentItems.length === 1 && currentPage > 1) {
         setCurrentPage(currentPage - 1);
@@ -85,8 +80,8 @@ export default function RecordingsList() {
             date={rec.date}
             duration={rec.duration}
             url={rec.url}
-            onWatch={() => alert(`Assistir: ${rec.url}`)}
-            onDelete={() => handleDelete(rec.id)}
+            onWatch={() => alert(`Assistir: ${rec.filename}`)}
+            onDelete={() => handleDelete(rec.id, rec.filename)}
           />
         ))}
       </div>

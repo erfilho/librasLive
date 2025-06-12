@@ -148,6 +148,7 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
     audioUrl: string,
     classRef: string,
     duration: number,
+    filename: string,
     originalTranscriptList: {
       time: number;
       original: string;
@@ -170,6 +171,7 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
       audioUrl,
       classRef,
       duration: formatTime(duration),
+      filename,
       transcription,
       translated: translation,
       createdAt: Timestamp.now(),
@@ -197,6 +199,7 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
         audioUrl,
         classRef,
         durationSeconds,
+        filename,
         translatedTranscriptList
       );
     } catch (err) {
