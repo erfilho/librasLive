@@ -1,4 +1,5 @@
 import RecordingCard from "./RecordingCard";
+import { DeletePopup } from "./AlertsPopups";
 
 import { useEffect, useState } from "react";
 
@@ -8,12 +9,18 @@ import {
   getTranscriptions,
   AudioRecorder,
 } from "../services/firestoreService";
+
 import { useAuth } from "../context/AuthContext";
 
 const ITEMS_PER_PAGE = 16;
 
 export default function RecordingsList() {
   const { user } = useAuth();
+
+  const [confirmation, setConfirmation] = useState<{
+    id: string;
+    filename: string;
+  } | null>(null);
 
   const [recordings, setRecordings] = useState<AudioRecorder[]>([]);
 
@@ -63,6 +70,7 @@ export default function RecordingsList() {
       if (currentItems.length === 1 && currentPage > 1) {
         setCurrentPage(currentPage - 1);
       }
+      setConfirmation(null);
     } catch (error) {
       console.error("Erro ao excluir gravação:", error);
       alert("Erro ao excluir gravação. Tente novamente.");
@@ -73,17 +81,41 @@ export default function RecordingsList() {
     <div className="flex flex-col justify-between h-5/6">
       {/* Mostragem dos itens */}
       <div className="flex flex-col lg:flex-row w-full self-start items-center justify-center lg:justify-start gap-3 flex-wrap">
-        {currentItems.map((rec) => (
-          <RecordingCard
-            key={rec.id}
-            title={rec.title}
-            date={rec.date}
-            duration={rec.duration}
-            url={rec.url}
-            onWatch={() => alert(`Assistir: ${rec.filename}`)}
-            onDelete={() => handleDelete(rec.id, rec.filename)}
+        {/* Exibição quando não tiver gravações para o usuário */}
+
+        {confirmation && (
+          <DeletePopup
+            title="Excluir Gravação"
+            message="Você tem certeza que deseja excluir esta gravação?"
+            onConfirm={() =>
+              handleDelete(confirmation.id, confirmation.filename)
+            }
+            onCancel={() => setConfirmation(null)}
           />
-        ))}
+        )}
+
+        {currentItems.length === 0 ? (
+          <div className="text-center text-gray-100 w-full">
+            <p className="text-lg font-bold">Nenhuma gravação encontrada.</p>
+            <p className="text-sm font-medium italic">
+              Faça uma nova gravação para começar.
+            </p>
+          </div>
+        ) : (
+          currentItems.map((rec) => (
+            <RecordingCard
+              key={rec.id}
+              title={rec.title}
+              date={rec.date}
+              duration={rec.duration}
+              url={rec.url}
+              onWatch={() => alert(`Assistir: ${rec.filename}`)}
+              onDelete={() =>
+                setConfirmation({ id: rec.id, filename: rec.filename })
+              } // Passa o ID e o nome do arquivo para a confirmação
+            />
+          ))
+        )}
       </div>
 
       {/* Paginação */}

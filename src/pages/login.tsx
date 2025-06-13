@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import logoLibrasLive from "../assets/LibrasLive.png";
 
+import { AlertsPopups } from "../components/AlertsPopups"; // Importa o componente de alertas
 import { handleGoogleLogin, loginUser } from "../utils/auth"; // Importa a função de login com Google
 
 import { useNavigate } from "react-router-dom";
@@ -9,7 +10,9 @@ import { useNavigate } from "react-router-dom";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+
   const [loading, setLoading] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
   const [sucess, setSucess] = useState<string | null>(null);
 
@@ -22,7 +25,7 @@ export default function Login() {
       setSucess("Login com Google bem sucedido!");
       setTimeout(() => {
         navigate("/dashboard");
-      }, 2000);
+      }, 1200);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -37,10 +40,10 @@ export default function Login() {
 
     try {
       await loginUser(email, senha);
-      setSucess("Login realizado com sucesso!");
+      setSucess("Você será redirecionado em breve!");
       setTimeout(() => {
         navigate("/dashboard");
-      }, 2000);
+      }, 1200);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -72,6 +75,7 @@ export default function Login() {
       {/* Right side */}
       <div className="lg:w-1/2 w-full lg:h-full h-3/4 flex items-center justify-center">
         <div className="lg:w-3/4 xl:w-3/5 w-full lg:h-3/4 h-full bg-blue-500 text-white p-10 lg:rounded-3xl flex flex-col justify-center shadow-2xl">
+          {/* Exibe o carregamento enquanto aguarda a resposta do servidor */}
           {loading && (
             <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center z-10">
               <img
@@ -84,31 +88,26 @@ export default function Login() {
               </p>
             </div>
           )}
+
           <h2 className="text-3xl font-semibold text-center mb-6">Login</h2>
 
+          {/* Exibe mensagens de erro ou sucesso */}
           {error && (
-            <div
-              className="p-4 mb-4 text-sm flex flex-col justify-center items-center text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
-              role="alert"
-            >
-              <span className="font-medium">
-                Erro <br />{" "}
-              </span>{" "}
-              {error}{" "}
-            </div>
+            <AlertsPopups
+              title="Erro ao fazer login"
+              type="error"
+              message={error}
+            />
           )}
           {sucess && (
-            <div
-              className="p-4 mb-4 text-sm flex flex-col justify-center items-center text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400"
-              role="alert"
-            >
-              <span className="font-medium">
-                Login concluído com sucesso! <br />{" "}
-              </span>{" "}
-              {sucess} <br />
-              Você será redirecionado em breve.
-            </div>
+            <AlertsPopups
+              title="Login bem-sucedido"
+              type="sucess"
+              message={sucess}
+            />
           )}
+
+          {/* Formulário de login */}
           <form
             onSubmit={handleLogin}
             className="flex flex-col gap-4 justify-center items-center"
@@ -137,8 +136,10 @@ export default function Login() {
             </button>
           </form>
 
+          {/* Divisor */}
           <div className="my-6 border-t w-4/5 self-center border-white opacity-50"></div>
 
+          {/* Botões de login */}
           <button
             onClick={googleLogin}
             className="flex items-center justify-center gap-2 cursor-pointer bg-white text-black py-2 rounded-full self-center font-medium hover:bg-gray-200 xl:w-1/2 md:w-2/4 sm:w-3/4 transition"

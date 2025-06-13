@@ -22,7 +22,6 @@ export default function NewRecord() {
 
     const data = await result.json();
     setText(data.translation);
-    console.log("Texto traduzido:", data.translation);
 
     if (playerRef.current) {
       playerRef.current.translate(text);

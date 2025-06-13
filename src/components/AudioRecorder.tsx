@@ -10,6 +10,7 @@ import {
 } from "../services/firestoreService";
 import { useAuth } from "../context/AuthContext";
 import { Timestamp } from "firebase/firestore";
+import { AlertsPopups } from "./AlertsPopups";
 
 interface AudioRecorderProps {
   onSave?: (audioBlob: Blob) => void;
@@ -215,17 +216,14 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
 
   return (
     <div className="flex flex-col gap-4 mb-6">
-      {error && (
-        <div className="bg-red-200 text-red-800 p-2 rounded mb-4 text-center">
-          {error}
-        </div>
-      )}
+      {error && <AlertsPopups title="Erro" type="error" message={error} />}
 
       {isSaving && (
-        <div className="bg-blue-200 text-green-500 p-2 rounded mb-4 text-center flex items-center justify-center gap-2">
-          <CloudArrowUpIcon className="h-5 w-5" />
-          Salvando...
-        </div>
+        <AlertsPopups
+          title="Salvando Gravação"
+          type="info"
+          message="Aguarde enquanto a gravação está sendo salva."
+        />
       )}
 
       <label className="block text-lg font-bold mb-1">
