@@ -1,9 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import {
-  MicrophoneIcon,
-  StopIcon,
-  CloudArrowUpIcon,
-} from "@heroicons/react/24/outline";
+import { MicrophoneIcon, StopIcon } from "@heroicons/react/24/outline";
 import {
   saveTranscription,
   uploadAudioFile,
