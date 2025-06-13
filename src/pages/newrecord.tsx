@@ -12,16 +12,10 @@ export default function NewRecord() {
   const [text, setText] = useState("");
 
   const handleTranslate = async () => {
-    const result = await fetch("http://localhost:3001/translate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ text }),
-    });
-
-    const data = await result.json();
-    setText(data.translation);
+    if (!text) {
+      alert("Por favor, insira um texto para traduzir.");
+      return;
+    }
 
     if (playerRef.current) {
       playerRef.current.translate(text);

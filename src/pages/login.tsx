@@ -2,8 +2,8 @@ import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import logoLibrasLive from "../assets/LibrasLive.png";
 
-import { AlertsPopups } from "../components/AlertsPopups"; // Importa o componente de alertas
-import { handleGoogleLogin, loginUser } from "../utils/auth"; // Importa a função de login com Google
+import { AlertsPopups } from "../components/AlertsPopups";
+import { handleGoogleLogin, loginUser } from "../utils/auth";
 
 import { useNavigate } from "react-router-dom";
 

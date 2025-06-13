@@ -128,11 +128,11 @@ export default function RecordingsList() {
           Anterior
         </button>
         <span className="px-4 py-2 bg-blue-400 text-white">
-          {currentPage} de {totalPages}
+          {currentPage} de {totalPages == 0 ? 1 : totalPages}
         </span>
         <button
           onClick={handleNextPage}
-          disabled={currentPage === totalPages}
+          disabled={currentPage === (totalPages == 0 ? 1 : totalPages)}
           className="bg-blue-400 text-white px-4 py-2 rounded-r"
         >
           Próximo

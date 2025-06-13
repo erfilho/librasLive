@@ -19,7 +19,6 @@ export default function RecordingCard({
   title,
   date,
   duration,
-  url,
   onWatch,
   onDelete,
 }: RecordingCardProps) {

@@ -21,10 +21,14 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
   const { user } = useAuth();
 
   const [title, setTitle] = useState("");
+
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [isRecording, setIsRecording] = useState(false);
+
+  const [recordingDuration, setRecordingDuration] = useState(0);
+
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
     null
@@ -38,10 +42,21 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
     setError(error);
   };
 
+  // Função para traduzir o áudio usando a API da OpenAI
   const translateText = async (text: string): Promise<string> => {
-    // Simulação - substitua pela chamada real de API se necessário
-    console.log(`TRADUZIDO: ${text}`);
-    return `Tradução de: ${text}`;
+    const response = await fetch("http://localhost:3001/translate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text }),
+    });
+
+    const data = await response.json();
+
+    const translation: string = data.translation;
+
+    return translation;
   };
 
   const [translatedTranscriptList, setTranslatedTranscriptList] = useState<
@@ -52,6 +67,7 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
   const recordingStartTime = useRef<number>(0);
   const lastTranscriptRef = useRef<string>("");
 
+  // Inicia o reconhecimento de fala quando o componente é montado
   useEffect(() => {
     const SpeechRecognition =
       (window as any).SpeechRecognition ||
@@ -91,7 +107,7 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
       };
 
       recognition.onerror = (event: any) => {
-        handleError(`Erro no reconhecimento de fala:, ${event.error}`);
+        handleError(`Erro no reconhecimento de fala: ${event.error}`);
       };
 
       recognitionRef.current = recognition;
@@ -101,6 +117,18 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
       recognitionRef.current?.abort();
     };
   }, []);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (isRecording) {
+      interval = setInterval(() => {
+        setRecordingDuration((prev) => prev + 1);
+      }, 1000);
+    }
+
+    return () => clearInterval(interval); // limpa o timer quando parar a gravação
+  }, [isRecording]);
 
   const startRecording = async () => {
     if (title === "") {
@@ -117,6 +145,7 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
     setMediaRecorder(mediaRecorder);
     setTranscriptList([]);
     setIsRecording(true);
+    setRecordingDuration(0);
 
     recordingStartTime.current = Date.now();
 
@@ -140,7 +169,7 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
     recognitionRef.current?.start();
   };
 
-  // Função para salvar a transcrição no Firestore ( precisa de ajustes )
+  // Função para salvar a transcrição no Firestore
   const handleSave = async (
     audioUrl: string,
     classRef: string,
@@ -163,6 +192,8 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
       .join("\n");
 
     setIsSaving(true);
+    setError(null);
+
     await saveTranscription({
       userId: user.uid,
       audioUrl,
@@ -173,11 +204,15 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
       translated: translation,
       createdAt: Timestamp.now(),
     });
+
     setIsSaving(false);
   };
 
   const stopRecording = async () => {
     setIsRecording(false);
+
+    setError(null);
+
     mediaRecorder?.stop();
     mediaStream?.getTracks().forEach((track) => track.stop());
     recognitionRef.current?.stop();
@@ -212,6 +247,7 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
 
   return (
     <div className="flex flex-col gap-4 mb-6">
+      {/* Mensagens de erro e salvamento */}
       {error && <AlertsPopups title="Erro" type="error" message={error} />}
 
       {isSaving && (
@@ -233,18 +269,23 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
         onChange={(e) => setTitle(e.target.value)}
       />
 
-      <div className="flex items-center justify-start gap-2 mb-4">
+      <div className="flex items-center justify-start gap-2 mb-4 w-full">
         {isRecording ? (
-          <button
-            className="bg-white hover:bg-blue-300 text-black px-4 py-2 rounded flex items-center justify-around gap-2 w-4/12"
-            onClick={stopRecording}
-          >
-            <StopIcon className="h-5 w-5" />
-            Parar e salvar
-          </button>
+          <div className="flex items-center justify-between gap-2 w-full">
+            <button
+              className="bg-white hover:bg-red-300 text-black px-4 py-2 rounded flex items-center justify-center gap-2 w-1/4"
+              onClick={stopRecording}
+            >
+              <StopIcon className="h-5 w-5" />
+              Parar
+            </button>
+            <p className="text-lg font-mono text-slate-100">
+              Duração: {formatTime(recordingDuration)}
+            </p>
+          </div>
         ) : (
           <button
-            className="bg-white hover:bg-green-300 text-black px-4 py-2 rounded flex items-center justify-center gap-2 w-1/6"
+            className="bg-white hover:bg-green-300 text-black px-4 py-2 rounded flex items-center justify-center gap-2 w-1/4"
             onClick={startRecording}
           >
             <MicrophoneIcon className="h-5 w-5" />
