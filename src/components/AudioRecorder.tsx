@@ -42,9 +42,26 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
     setError(error);
   };
 
-  // Função para traduzir o áudio usando a API da OpenAI
-  const translateText = async (text: string): Promise<string> => {
+  // Função para traduzir o áudio usando a API da OpenAI Local
+  const translateTextOld = async (text: string): Promise<string> => {
     const response = await fetch("http://localhost:3001/translate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text }),
+    });
+
+    const data = await response.json();
+
+    const translation: string = data.translation;
+
+    return translation;
+  };
+
+  // Função para traduzir o texto, utilizando a API da Web
+  const translateText = async (text: string): Promise<string> => {
+    const response = await fetch("https://libraslive.onrender.com/translate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
