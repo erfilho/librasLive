@@ -14,7 +14,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const upload = multer({ dest: "/uploads" });
+const upload = multer({ dest: "/tmp/" });
 
 const openai = new OpenAI({
   apiKey: process.env.API_KEY,
