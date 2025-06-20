@@ -11,7 +11,9 @@ import OpenAI from "openai";
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+app.use(cors(["http://localhost:5173", "https://libras-live.web.app/"]));
+
 app.use(express.json());
 
 const storage = multer.diskStorage({
