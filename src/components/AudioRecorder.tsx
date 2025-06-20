@@ -43,7 +43,8 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
 
   // Função para traduzir o texto, utilizando a API da Web
   const translateText = async (text: string): Promise<string> => {
-    const response = await fetch("https://libraslive.onrender.com/translate", {
+    // const response = await fetch("https://libraslive.onrender.com/translate", {
+    const response = await fetch("http://localhost:3001/translate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -86,7 +87,8 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
     formData.append("audio", chunk, "chunk.webm");
 
     try {
-      const res = await fetch("https://libraslive.onrender.com/transcribe", {
+      //const res = await fetch("https://libraslive.onrender.com/transcribe", {
+      const res = await fetch("http://localhost:3001/transcribe", {
         method: "POST",
         body: formData,
       });
@@ -130,9 +132,12 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
       setError(null);
     }
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const constraints = { audio: true };
+
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
     const mediaRecorder = new MediaRecorder(stream, {
-      mimeType: "audio/webm",
+      mimeType: "audio/webm;codecs=opus",
     });
 
     setMediaStream(stream);
