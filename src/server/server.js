@@ -5,10 +5,10 @@ import cors from "cors";
 
 import fs from "fs";
 import multer from "multer";
+import mime from "mime-types";
+import ffmpeg from "fluent-ffmpeg";
 
 import OpenAI from "openai";
-
-import path from "path";
 
 dotenv.config();
 
@@ -21,8 +21,11 @@ app.use(express.json());
 const storage = multer.diskStorage({
   destination: "/tmp/",
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname) || ".webm";
-    cb(null, file.fieldname + "-" + Date.now() + ext);
+    let ext = mime.extension(file.mimetype) || ".webm";
+    if (ext === "weba") {
+      ext = "webm";
+    }
+    cb(null, file.fieldname + "-" + Date.now() + "." + ext);
   },
 });
 
@@ -31,6 +34,22 @@ const upload = multer({ storage });
 const openai = new OpenAI({
   apiKey: process.env.API_KEY,
 });
+
+function convertToWav(inputPath, outputPath) {
+  return new Promise((resolve, reject) => {
+    ffmpeg(inputPath)
+      .toFormat("wav")
+      .on("error", (err) => {
+        console.error("Erro na conversão: ", err.message);
+        reject(err);
+      })
+      .on("end", () => {
+        console.log("Conversão finalizada!");
+        resolve();
+      })
+      .save(outputPath);
+  });
+}
 
 // Endpoint for translation of transcribe for best mimes for Libras using the openAI API
 app.post("/translate", async (req, res) => {
@@ -67,7 +86,14 @@ app.post("/transcribe", upload.single("audio"), async (req, res) => {
 
   const audioPath = req.file.path;
 
+  const convertedAudioPath = audioPath + ".wav";
+
+  console.log("Arquivo recebido: ", audioPath, req.file.mimetype);
+
   try {
+    console.log("Mimetype:", req.file.mimetype);
+    console.log("Nome do arquivo salvo:", audioPath);
+
     const transcription = await openai.audio.transcriptions.create({
       file: fs.createReadStream(audioPath),
       model: "whisper-1",
