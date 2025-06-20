@@ -18,8 +18,10 @@ app.use(cors(["http://localhost:5173", "https://libras-live.web.app/"]));
 
 app.use(express.json());
 
+import open from "open";
+
 const storage = multer.diskStorage({
-  destination: "/tmp/",
+  destination: "C:/temp/",
   filename: (req, file, cb) => {
     let ext = mime.extension(file.mimetype) || ".webm";
     if (ext === "weba") {
@@ -35,10 +37,10 @@ const openai = new OpenAI({
   apiKey: process.env.API_KEY,
 });
 
-function convertToWav(inputPath, outputPath) {
+function convertToMp3(inputPath, outputPath) {
   return new Promise((resolve, reject) => {
     ffmpeg(inputPath)
-      .toFormat("wav")
+      .toFormat("mp3")
       .on("error", (err) => {
         console.error("Erro na conversão: ", err.message);
         reject(err);
@@ -86,26 +88,30 @@ app.post("/transcribe", upload.single("audio"), async (req, res) => {
 
   const audioPath = req.file.path;
 
-  const convertedAudioPath = audioPath + ".wav";
+  const audioMp3Path = audioPath.replace(/\.\w+$/, ".mp3");
 
-  console.log("Arquivo recebido: ", audioPath, req.file.mimetype);
+  await convertToMp3(audioPath, audioMp3Path);
+
+  console.log(audioPath, "caminho do audio");
 
   try {
     console.log("Mimetype:", req.file.mimetype);
     console.log("Nome do arquivo salvo:", audioPath);
 
-    const transcription = await openai.audio.transcriptions.create({
-      file: fs.createReadStream(audioPath),
+    const result = await openai.audio.transcriptions.create({
       model: "whisper-1",
-      response_format: "text",
+      file: fs.createReadStream(audioMp3Path),
     });
 
-    res.json({ transcription: transcription.text });
+    await console.log(result);
   } catch (err) {
     console.error("Erro na transcrição de áudio: ", err);
     res.status(500).json({ error: "Erro ao transcrever" });
   } finally {
     fs.unlinkSync(audioPath, (err) => {
+      if (err) console.error("Erro ao deletar arquivo temporário! ", err);
+    });
+    fs.unlinkSync(audioMp3Path, (err) => {
       if (err) console.error("Erro ao deletar arquivo temporário! ", err);
     });
   }
