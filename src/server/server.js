@@ -15,10 +15,10 @@ app.use(cors());
 app.use(express.json());
 
 const storage = multer.diskStorage({
-  destination: "/tmp",
+  destination: "/tmp/",
   filename: (req, file, cb) => {
-    const ext = file.originalname.split(".").pop();
-    cb(null, `${Date.now()}.${ext}`);
+    const ext = path.extname(file.originalname) || ".webm";
+    cb(null, file.fieldname + "-" + Date.now() + ext);
   },
 });
 
@@ -75,7 +75,9 @@ app.post("/transcribe", upload.single("audio"), async (req, res) => {
     console.error("Erro na transcrição de áudio: ", err);
     res.status(500).json({ error: "Erro ao transcrever" });
   } finally {
-    fs.unlinkSync(audioPath);
+    fs.unlinkSync(audioPath, (err) => {
+      if (err) console.error("Erro ao deletar arquivo temporário! ", err);
+    });
   }
 });
 

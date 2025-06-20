@@ -83,7 +83,7 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
 
     const formData = new FormData();
 
-    formData.append("audio", chunk, "chunk.wav");
+    formData.append("audio", chunk, "chunk.webm");
 
     try {
       const res = await fetch("https://libraslive.onrender.com/transcribe", {
@@ -132,7 +132,7 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
 
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const mediaRecorder = new MediaRecorder(stream, {
-      mimeType: "audio/wav",
+      mimeType: "audio/webm",
     });
 
     setMediaStream(stream);
@@ -162,7 +162,7 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
       console.log(`seg ${translatedTranscriptList}`);
 
       const audioBlob = new Blob(audioChunksRef.current, {
-        type: "audio/wav",
+        type: "audio/webm",
       });
       const url = URL.createObjectURL(audioBlob);
       setAudioURL(url);
@@ -222,8 +222,8 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
     mediaStream?.getTracks().forEach((track) => track.stop());
 
     // Atualizando o nome do arquivo de acordo com o uuid do usuário e o timestamp atual
-    const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
-    const filename = `${user?.uid}_${Date.now()}.wav`;
+    const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+    const filename = `${user?.uid}_${Date.now()}.webm`;
 
     // Salvando a duração do áudio
     const durationSeconds = Math.floor(

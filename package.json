@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "dist": "npx serve -s dist",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "uptofirebase": "npm run build && firebase deploy"
   },
   "dependencies": {
     "@google-cloud/speech": "^7.1.0",
