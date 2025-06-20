@@ -14,7 +14,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const upload = multer({ dest: "/tmp/" });
+const storage = multer.diskStorage({
+  destination: "/tmp",
+  filename: (req, file, cb) => {
+    const ext = file.originalname.split(".").pop();
+    cb(null, `${Date.now()}.${ext}`);
+  },
+});
+
+const upload = multer({ storage });
 
 const openai = new OpenAI({
   apiKey: process.env.API_KEY,
@@ -49,16 +57,20 @@ app.post("/translate", async (req, res) => {
 
 // Endpoint for transcribe the audio for text with openAi API
 app.post("/transcribe", upload.single("audio"), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: "Erro com o arquivo de áudio" });
+  }
+
   const audioPath = req.file.path;
 
   try {
     const transcription = await openai.audio.transcriptions.create({
       file: fs.createReadStream(audioPath),
       model: "whisper-1",
-      language: "pt",
+      response_format: "text",
     });
 
-    res.join({ transcription: transcription.text });
+    res.json({ transcription: transcription.text });
   } catch (err) {
     console.error("Erro na transcrição de áudio: ", err);
     res.status(500).json({ error: "Erro ao transcrever" });
