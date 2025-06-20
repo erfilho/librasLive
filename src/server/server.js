@@ -8,6 +8,8 @@ import multer from "multer";
 
 import OpenAI from "openai";
 
+import path from "path";
+
 dotenv.config();
 
 const app = express();
