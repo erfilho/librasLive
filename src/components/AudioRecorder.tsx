@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from "react";
+
 import { MicrophoneIcon, StopIcon } from "@heroicons/react/24/outline";
 import {
   saveTranscription,
@@ -6,18 +7,17 @@ import {
 } from "../services/firestoreService";
 import { useAuth } from "../context/AuthContext";
 import { Timestamp } from "firebase/firestore";
+
 import { AlertsPopups } from "./AlertsPopups";
 
-interface AudioRecorderProps {
-  onSave?: (audioBlob: Blob) => void;
-}
+import Recorder from "recorder-js";
 
 interface TranscriptLine {
   time: number; // segundos
   text: string;
 }
 
-export default function AudioRecorder({ onSave }: AudioRecorderProps) {
+export default function AudioRecorder() {
   const { user } = useAuth();
 
   const [title, setTitle] = useState("");
@@ -25,14 +25,13 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [Recorder, setRecorder] = useState<Recorder | null>(null);
   const [isRecording, setIsRecording] = useState(false);
 
   const [recordingDuration, setRecordingDuration] = useState(0);
 
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
-    null
-  );
+
   const [audioURL, setAudioURL] = useState<string | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
@@ -84,7 +83,7 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
 
     const formData = new FormData();
 
-    formData.append("audio", chunk, "chunk.webm");
+    formData.append("audio", chunk, "audio.webm");
 
     try {
       //const res = await fetch("https://libraslive.onrender.com/transcribe", {
@@ -132,16 +131,15 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
       setError(null);
     }
 
-    const constraints = { audio: true };
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    const newRecorder = new Recorder(new AudioContext());
 
-    const mediaRecorder = new MediaRecorder(stream, {
-      mimeType: "audio/webm;codecs=opus",
-    });
+    await newRecorder.init(stream);
 
     setMediaStream(stream);
-    setMediaRecorder(mediaRecorder);
+
+    setRecorder(newRecorder);
 
     setTranscriptList([]);
     setTranslatedTranscriptList([]);
@@ -152,30 +150,7 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
 
     recordingStartTime.current = Date.now();
 
-    mediaRecorder.start(5000);
-
     audioChunksRef.current = [];
-
-    mediaRecorder.ondataavailable = async (event) => {
-      if (event.data.size > 0) {
-        handleChunck(event.data);
-      }
-    };
-
-    mediaRecorder.onstop = () => {
-      console.log(`prim ${transcriptList}`);
-      console.log(`seg ${translatedTranscriptList}`);
-
-      const audioBlob = new Blob(audioChunksRef.current, {
-        type: "audio/webm",
-      });
-      const url = URL.createObjectURL(audioBlob);
-      setAudioURL(url);
-
-      if (onSave) {
-        onSave(audioBlob);
-      }
-    };
   };
 
   // Função para salvar a transcrição no Firestore
@@ -219,11 +194,39 @@ export default function AudioRecorder({ onSave }: AudioRecorderProps) {
 
   // Função para salvar a transcrição após finalização da gravação
   const stopRecording = async () => {
+    mediaRecorder.start(10000);
+
+    mediaRecorder.ondataavailable = async (event) => {
+      if (event.data.size > 200) {
+        await handleChunck(event.data);
+      } else {
+        console.warn("Chunk vazio descartado:", event.data.size);
+      }
+    };
+
+    mediaRecorder.onstop = () => {
+      console.log(`prim ${transcriptList}`);
+      console.log(`seg ${translatedTranscriptList}`);
+
+      const audioBlob = new Blob(audioChunksRef.current, {
+        type: "audio/webm",
+      });
+      const url = URL.createObjectURL(audioBlob);
+      setAudioURL(url);
+
+      if (onSave) {
+        onSave(audioBlob);
+      }
+    };
+
+    if (!Recorder) return;
+
+    const { blob } = await Recorder.stop();
+
     setIsRecording(false);
 
     setError(null);
 
-    mediaRecorder?.stop();
     mediaStream?.getTracks().forEach((track) => track.stop());
 
     // Atualizando o nome do arquivo de acordo com o uuid do usuário e o timestamp atual

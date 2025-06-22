@@ -3,10 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 
-import fs from "fs";
 import multer from "multer";
-import mime from "mime-types";
-import ffmpeg from "fluent-ffmpeg";
 
 import OpenAI from "openai";
 
@@ -14,44 +11,32 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors(["http://localhost:5173", "https://libras-live.web.app/"]));
+// CORS Setting
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://libras-live.web.app/"],
+  })
+);
 
+// Express setting
 app.use(express.json());
 
-import open from "open";
-
+// Multer storage setting
 const storage = multer.diskStorage({
-  destination: "C:/temp/",
   filename: (req, file, cb) => {
-    let ext = mime.extension(file.mimetype) || ".webm";
-    if (ext === "weba") {
-      ext = "webm";
-    }
-    cb(null, file.fieldname + "-" + Date.now() + "." + ext);
+    cb(null, file.originalname);
+  },
+  destination: (req, file, cb) => {
+    cb(null, "./tmp");
   },
 });
 
 const upload = multer({ storage });
 
+// OpenAI API Key setting
 const openai = new OpenAI({
   apiKey: process.env.API_KEY,
 });
-
-function convertToMp3(inputPath, outputPath) {
-  return new Promise((resolve, reject) => {
-    ffmpeg(inputPath)
-      .toFormat("mp3")
-      .on("error", (err) => {
-        console.error("Erro na conversão: ", err.message);
-        reject(err);
-      })
-      .on("end", () => {
-        console.log("Conversão finalizada!");
-        resolve();
-      })
-      .save(outputPath);
-  });
-}
 
 // Endpoint for translation of transcribe for best mimes for Libras using the openAI API
 app.post("/translate", async (req, res) => {
@@ -86,35 +71,9 @@ app.post("/transcribe", upload.single("audio"), async (req, res) => {
     return res.status(400).json({ error: "Erro com o arquivo de áudio" });
   }
 
-  const audioPath = req.file.path;
-
-  const audioMp3Path = audioPath.replace(/\.\w+$/, ".mp3");
-
-  await convertToMp3(audioPath, audioMp3Path);
-
-  console.log(audioPath, "caminho do audio");
-
   try {
-    console.log("Mimetype:", req.file.mimetype);
-    console.log("Nome do arquivo salvo:", audioPath);
-
-    const result = await openai.audio.transcriptions.create({
-      model: "whisper-1",
-      file: fs.createReadStream(audioMp3Path),
-    });
-
-    await console.log(result);
-  } catch (err) {
-    console.error("Erro na transcrição de áudio: ", err);
-    res.status(500).json({ error: "Erro ao transcrever" });
-  } finally {
-    fs.unlinkSync(audioPath, (err) => {
-      if (err) console.error("Erro ao deletar arquivo temporário! ", err);
-    });
-    fs.unlinkSync(audioMp3Path, (err) => {
-      if (err) console.error("Erro ao deletar arquivo temporário! ", err);
-    });
-  }
+    console.log("Sucessful upload");
+  } catch (err) {}
 });
 
 const PORT = process.env.PORT || 3001;
