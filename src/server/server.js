@@ -7,7 +7,6 @@ import multer from "multer";
 
 import OpenAI from "openai";
 
-dotenv.config();
 
 const app = express();
 
@@ -74,10 +73,4 @@ app.post("/transcribe", upload.single("audio"), async (req, res) => {
   try {
     console.log("Sucessful upload");
   } catch (err) {}
-});
-
-const PORT = process.env.PORT || 3001;
-
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
 });
