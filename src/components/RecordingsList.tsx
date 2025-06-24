@@ -3,6 +3,8 @@ import { DeletePopup } from "./AlertsPopups";
 
 import { useEffect, useState } from "react";
 
+import ErrorHandler, { useErrorHandler } from "./ErrorHandler";
+
 import {
   deleteTranscription,
   deleteAudioFile,
@@ -21,6 +23,10 @@ export default function RecordingsList() {
     id: string;
     filename: string;
   } | null>(null);
+
+  const [error, setError] = useState(false);
+  
+  const handleError = useErrorHandler();
 
   const [recordings, setRecordings] = useState<AudioRecorder[]>([]);
 
@@ -56,7 +62,7 @@ export default function RecordingsList() {
         setRecordings(data || []);
       } catch (error) {
         console.error("Erro ao buscar gravações:", error);
-        alert("Erro ao buscar gravações. Tente novamente.");
+        handleError(`Erro ao buscar gravações. Tente novamente. ${error}`);
       }
     };
     fetchRecordings();
@@ -73,7 +79,7 @@ export default function RecordingsList() {
       setConfirmation(null);
     } catch (error) {
       console.error("Erro ao excluir gravação:", error);
-      alert("Erro ao excluir gravação. Tente novamente.");
+      handleError(`Erro ao excluir gravação. Tente novamente.${error}`);
     }
   };
 
@@ -81,8 +87,10 @@ export default function RecordingsList() {
     <div className="flex flex-col justify-between h-5/6">
       {/* Mostragem dos itens */}
       <div className="flex flex-col lg:flex-row w-full self-start items-center justify-center lg:justify-start gap-3 flex-wrap">
-        {/* Exibição quando não tiver gravações para o usuário */}
+        {/* Exibição de popup de erro */}
+        <ErrorHandler autoDismiss={3000} defaultTitle="Erro nas gravações!" />
 
+        {/* Exibição de card de confirmação de exclusão */}
         {confirmation && (
           <DeletePopup
             title="Excluir Gravação"
@@ -94,6 +102,7 @@ export default function RecordingsList() {
           />
         )}
 
+        {/* Exibição quando não tiver gravações para o usuário */}
         {currentItems.length === 0 ? (
           <div className="text-center text-gray-100 w-full">
             <p className="text-lg font-bold">Nenhuma gravação encontrada.</p>

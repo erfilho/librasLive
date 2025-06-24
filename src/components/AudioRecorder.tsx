@@ -5,8 +5,15 @@ import {
   saveTranscription,
   uploadAudioFile,
 } from "../services/firestoreService";
+
+import { transcribeText, translateText } from "../services/speechService";
+
 import { useAuth } from "../context/AuthContext";
+
 import { Timestamp } from "firebase/firestore";
+
+import ErrorHandler, { useErrorHandler } from "./ErrorHandler";
+import { formatTime } from "../utils/format";
 
 import { AlertsPopups } from "./AlertsPopups";
 
@@ -23,7 +30,10 @@ export default function AudioRecorder() {
   const [title, setTitle] = useState("");
 
   const [isSaving, setIsSaving] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
+
+  const handleError = useErrorHandler();
 
   const [Recorder, setRecorder] = useState<Recorder | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -34,29 +44,6 @@ export default function AudioRecorder() {
 
   const [audioURL, setAudioURL] = useState<string | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-
-  const handleError = (error: string) => {
-    console.error("Erro:", error);
-    setError(error);
-  };
-
-  // Função para traduzir o texto, utilizando a API da Web
-  const translateText = async (text: string): Promise<string> => {
-    // const response = await fetch("https://libraslive.onrender.com/translate", {
-    const response = await fetch("http://localhost:3001/translate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ text }),
-    });
-
-    const data = await response.json();
-
-    const translation: string = data.translation;
-
-    return translation;
-  };
 
   const [translatedTranscriptList, setTranslatedTranscriptList] = useState<
     { time: number; original: string; translated: string }[]
@@ -86,19 +73,11 @@ export default function AudioRecorder() {
     formData.append("audio", chunk, "audio.webm");
 
     try {
-      //const res = await fetch("https://libraslive.onrender.com/transcribe", {
-      const res = await fetch("http://localhost:3001/transcribe", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-
       const timeSinceStart = Math.floor(
         (Date.now() - recordingStartTime.current) / 1000
       );
 
-      const transcript = data.transcription;
+      const transcript = await transcribeText(formData);
 
       if (transcript) {
         setTranscriptList((prev) => [
@@ -255,17 +234,10 @@ export default function AudioRecorder() {
     }
   };
 
-  // Função para formatar o timestamp do áudio
-  const formatTime = (seconds: number) => {
-    const min = String(Math.floor(seconds / 60)).padStart(2, "0");
-    const sec = String(seconds % 60).padStart(2, "0");
-    return `${min}:${sec}`;
-  };
-
   return (
     <div className="flex flex-col gap-4 mb-6">
       {/* Mensagens de erro e salvamento */}
-      {error && <AlertsPopups title="Erro" type="error" message={error} />}
+      <ErrorHandler autoDismiss={3000} defaultTitle="Erro!" />
 
       {isSaving && (
         <AlertsPopups
