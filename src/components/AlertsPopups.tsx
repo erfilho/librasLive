@@ -1,5 +1,5 @@
 interface AlertsPopupsProps {
-  title: string;
+  title?: string;
   type: string;
   message: string;
 }

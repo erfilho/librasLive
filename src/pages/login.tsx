@@ -2,7 +2,8 @@ import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import logoLibrasLive from "../assets/LibrasLive.png";
 
-import { AlertsPopups } from "../components/AlertsPopups";
+import { useNotification } from "../context/notifications/useNotification";
+
 import { handleGoogleLogin, loginUser } from "../utils/auth";
 
 import { useNavigate } from "react-router-dom";
@@ -13,8 +14,7 @@ export default function Login() {
 
   const [loading, setLoading] = useState(false);
 
-  const [error, setError] = useState<string | null>(null);
-  const [sucess, setSucess] = useState<string | null>(null);
+  const { handleError, handleSucess } = useNotification();
 
   const navigate = useNavigate();
 
@@ -22,12 +22,12 @@ export default function Login() {
     setLoading(true);
     try {
       await handleGoogleLogin();
-      setSucess("Login com Google bem sucedido!");
+      handleSucess("Login com Google bem sucedido!", "Sucesso!");
       setTimeout(() => {
         navigate("/dashboard");
       }, 1200);
     } catch (err) {
-      setError((err as Error).message);
+      handleError(err);
     } finally {
       setLoading(false);
     }
@@ -36,16 +36,15 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
 
     try {
       await loginUser(email, senha);
-      setSucess("Você será redirecionado em breve!");
+      handleSucess("Você será redirecionado em breve!", "Login bem sucedido!");
       setTimeout(() => {
         navigate("/dashboard");
       }, 1200);
     } catch (err) {
-      setError((err as Error).message);
+      handleError(err);
     } finally {
       setLoading(false);
     }
@@ -90,22 +89,6 @@ export default function Login() {
           )}
 
           <h2 className="text-3xl font-semibold text-center mb-6">Login</h2>
-
-          {/* Exibe mensagens de erro ou sucesso */}
-          {error && (
-            <AlertsPopups
-              title="Erro ao fazer login"
-              type="error"
-              message={error}
-            />
-          )}
-          {sucess && (
-            <AlertsPopups
-              title="Login bem-sucedido"
-              type="sucess"
-              message={sucess}
-            />
-          )}
 
           {/* Formulário de login */}
           <form

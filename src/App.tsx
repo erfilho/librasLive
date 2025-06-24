@@ -10,49 +10,56 @@ import NotFound from "./pages/notfound";
 
 import PrivateRoute from "./routes/PrivateRoute";
 import { AuthProvider } from "./context/AuthContext";
+import { NotificationProvider } from "./context/notifications/NotificationProvider";
 
 function App() {
   return (
-    <AuthProvider>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="*" element={<NotFound />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/newrecord"
-          element={
-            <PrivateRoute>
-              <NewRecord />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/player"
-          element={
-            <PrivateRoute>
-              <Player />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <PrivateRoute>
-              <Settings />
-            </PrivateRoute>
-          }
-        />
-      </Routes>
-    </AuthProvider>
+    <NotificationProvider
+      autoDismiss={3000}
+      defaultErrorTitle="Erro no login!"
+      defaultSucessTitle="Sucesso!"
+    >
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="*" element={<NotFound />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/newrecord"
+            element={
+              <PrivateRoute>
+                <NewRecord />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/player"
+            element={
+              <PrivateRoute>
+                <Player />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <PrivateRoute>
+                <Settings />
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </AuthProvider>
+    </NotificationProvider>
   );
 }
 
