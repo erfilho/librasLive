@@ -169,41 +169,10 @@ export default function AudioRecorder() {
 
   // Função para salvar a transcrição após finalização da gravação
   const stopRecording = async () => {
-    mediaRecorder.start(10000);
-
-    mediaRecorder.ondataavailable = async (event) => {
-      if (event.data.size > 200) {
-        await handleChunck(event.data);
-      } else {
-        console.warn("Chunk vazio descartado:", event.data.size);
-      }
-    };
-
-    mediaRecorder.onstop = () => {
-      console.log(`prim ${transcriptList}`);
-      console.log(`seg ${translatedTranscriptList}`);
-
-      const audioBlob = new Blob(audioChunksRef.current, {
-        type: "audio/webm",
-      });
-      const url = URL.createObjectURL(audioBlob);
-      setAudioURL(url);
-
-      if (onSave) {
-        onSave(audioBlob);
-      }
-    };
 
     if (!Recorder) return;
 
-    const { blob } = await Recorder.stop();
-
-    setIsRecording(false);
-
-    mediaStream?.getTracks().forEach((track) => track.stop());
-
     // Atualizando o nome do arquivo de acordo com o uuid do usuário e o timestamp atual
-    const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
     const filename = `${user?.uid}_${Date.now()}.webm`;
 
     // Salvando a duração do áudio
@@ -213,7 +182,8 @@ export default function AudioRecorder() {
 
     // Utilizando a função handleSave para salvar no Firestore
     try {
-      const audioUrl = await uploadAudioFile(audioBlob, filename);
+      const audioUrl = 'teste.ogg'
+      
       const classRef = title;
 
       await handleSave(

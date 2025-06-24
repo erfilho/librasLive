@@ -68,4 +68,21 @@ export const useAudioRecorder = () => {
       setIsRecording(false);
     });
   };
+
+  useEffect(() => {
+    return () => {
+      if (mediaRecorder.current?.state === "recording") {
+        mediaRecorder.current.stop();
+      }
+      mediaStream.current?.getTracks().forEach((track) => track.stop());
+    };
+  }, []);
+
+  return {
+    startRecording,
+    stopRecording,
+    isRecording,
+    audioChunks,
+    error,
+  };
 };
