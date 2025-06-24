@@ -12,7 +12,8 @@ import { useAuth } from "../context/AuthContext";
 
 import { Timestamp } from "firebase/firestore";
 
-import ErrorHandler, { useErrorHandler } from "./ErrorHandler";
+import { useNotification } from "../context/notifications/useNotification";
+
 import { formatTime } from "../utils/format";
 
 import { AlertsPopups } from "./AlertsPopups";
@@ -31,9 +32,7 @@ export default function AudioRecorder() {
 
   const [isSaving, setIsSaving] = useState(false);
 
-  const [error, setError] = useState<string | null>(null);
-
-  const handleError = useErrorHandler();
+  const { handleError } = useNotification();
 
   const [Recorder, setRecorder] = useState<Recorder | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -104,10 +103,8 @@ export default function AudioRecorder() {
   // Função para iniciar a gravação do áudio
   const startRecording = async () => {
     if (title === "") {
-      setError("Por favor, insira um título para a gravação.");
+      handleError("Por favor, insira um título para a gravação.");
       return;
-    } else {
-      setError(null);
     }
 
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -155,7 +152,6 @@ export default function AudioRecorder() {
       .join("\n");
 
     setIsSaving(true);
-    setError(null);
 
     await saveTranscription({
       userId: user.uid,
@@ -204,8 +200,6 @@ export default function AudioRecorder() {
 
     setIsRecording(false);
 
-    setError(null);
-
     mediaStream?.getTracks().forEach((track) => track.stop());
 
     // Atualizando o nome do arquivo de acordo com o uuid do usuário e o timestamp atual
@@ -236,8 +230,6 @@ export default function AudioRecorder() {
 
   return (
     <div className="flex flex-col gap-4 mb-6">
-      {/* Mensagens de erro e salvamento */}
-      <ErrorHandler autoDismiss={3000} defaultTitle="Erro!" />
 
       {isSaving && (
         <AlertsPopups
