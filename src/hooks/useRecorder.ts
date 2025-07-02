@@ -11,7 +11,7 @@ export const useAudioRecorder = () => {
   const mediaStream = useRef<MediaStream | null>(null);
   const mediaRecorder = useRef<MediaRecorder | null>(null);
 
-  const [audioUrl, setAudioURL] = useState<String | null>(null);
+  const [audioUrl, setAudioURL] = useState("");
 
   const CHUNK_DURATION = 5000;
 
@@ -90,6 +90,7 @@ export const useAudioRecorder = () => {
     stopRecording,
     isRecording,
     audioChunks,
+    audioUrl,
     error,
   };
 };

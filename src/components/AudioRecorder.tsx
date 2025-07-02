@@ -30,16 +30,13 @@ export default function AudioRecorder() {
 
   const [isSaving, setIsSaving] = useState(false);
 
-  // Verificação apenas para teste
-  const [audioUrl, setAudioUrl] = useState("");
-
   const { handleError } = useNotification();
 
   const {
     startRecording: startAudioRecording,
     stopRecording: stopAudioRecording,
     isRecording,
-    audioChunks,
+    audioUrl,
   } = useAudioRecorder();
 
   const [recordingDuration, setRecordingDuration] = useState(0);
@@ -135,16 +132,13 @@ export default function AudioRecorder() {
       const audioBlob = await stopAudioRecording();
 
       // Upload do audio, considerando a existencia do uploadAudioFile
-      const audioURL = await uploadAudioFile(audioBlob, filename);
-
-      // Somente para testes
-      setAudioUrl(audioURL);
+      const uploadAudioURL = await uploadAudioFile(audioBlob, filename);
 
       // Utilizando a função handleSave para salvar no Firestore
       const classRef = title;
 
       await handleSave(
-        audioUrl,
+        uploadAudioURL,
         classRef,
         durationSeconds,
         filename,
