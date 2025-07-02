@@ -46,8 +46,11 @@ export const useAudioRecorder = () => {
   };
 
   const stopRecording = async (): Promise<Blob> => {
-    return new Promise((resolve) => {
-      if (!isRecording || !mediaRecorder.current) return;
+    return new Promise((resolve, reject) => {
+      if (!isRecording || !mediaRecorder.current) {
+        reject(new Error("Gravação já iniciada ou já finalizada!"));
+        return;
+      }
 
       mediaRecorder.current.onstop = () => {
         const audioBlob = new Blob(audioChunks, { type: "audio/ogg" });
@@ -59,6 +62,10 @@ export const useAudioRecorder = () => {
         const url = URL.createObjectURL(audioBlob);
 
         setAudioURL(url);
+      };
+
+      mediaRecorder.current.onerror = (event) => {
+        reject(new Error(`Erro na gravação: ${event}`));
       };
 
       mediaRecorder.current.stop();

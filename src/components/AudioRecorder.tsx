@@ -6,8 +6,6 @@ import {
   uploadAudioFile,
 } from "../services/firestoreService";
 
-import { transcribeText, translateText } from "../services/speechService";
-
 import { useAuth } from "../context/AuthContext";
 
 import { Timestamp } from "firebase/firestore";
@@ -18,7 +16,7 @@ import { formatTime } from "../utils/format";
 
 import { AlertsPopups } from "./AlertsPopups";
 
-import Recorder from "recorder-js";
+import { useAudioRecorder } from "../hooks/useRecorder";
 
 interface TranscriptLine {
   time: number; // segundos
@@ -32,17 +30,19 @@ export default function AudioRecorder() {
 
   const [isSaving, setIsSaving] = useState(false);
 
+  // Verificação apenas para teste
+  const [audioUrl, setAudioUrl] = useState("");
+
   const { handleError } = useNotification();
 
-  const [Recorder, setRecorder] = useState<Recorder | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
+  const {
+    startRecording: startAudioRecording,
+    stopRecording: stopAudioRecording,
+    isRecording,
+    audioChunks,
+  } = useAudioRecorder();
 
   const [recordingDuration, setRecordingDuration] = useState(0);
-
-  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
-
-  const [audioURL, setAudioURL] = useState<string | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
 
   const [translatedTranscriptList, setTranslatedTranscriptList] = useState<
     { time: number; original: string; translated: string }[]
@@ -64,42 +64,6 @@ export default function AudioRecorder() {
     return () => clearInterval(interval);
   }, [isRecording]);
 
-  const handleChunck = async (chunk: Blob) => {
-    audioChunksRef.current.push(chunk);
-
-    const formData = new FormData();
-
-    formData.append("audio", chunk, "audio.webm");
-
-    try {
-      const timeSinceStart = Math.floor(
-        (Date.now() - recordingStartTime.current) / 1000
-      );
-
-      const transcript = await transcribeText(formData);
-
-      if (transcript) {
-        setTranscriptList((prev) => [
-          ...prev,
-          { time: timeSinceStart, text: transcript },
-        ]);
-      }
-
-      const translated = await translateText(transcript);
-
-      setTranslatedTranscriptList((prev) => [
-        ...prev,
-        {
-          time: timeSinceStart,
-          original: transcript,
-          translated,
-        },
-      ]);
-    } catch (err) {
-      handleError(`Erro durante a transcrição: ${err}`);
-    }
-  };
-
   // Função para iniciar a gravação do áudio
   const startRecording = async () => {
     if (title === "") {
@@ -107,26 +71,15 @@ export default function AudioRecorder() {
       return;
     }
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-    const newRecorder = new Recorder(new AudioContext());
-
-    await newRecorder.init(stream);
-
-    setMediaStream(stream);
-
-    setRecorder(newRecorder);
-
     setTranscriptList([]);
-    setTranslatedTranscriptList([]);
 
-    setIsRecording(true);
+    setTranslatedTranscriptList([]);
 
     setRecordingDuration(0);
 
     recordingStartTime.current = Date.now();
 
-    audioChunksRef.current = [];
+    await startAudioRecording();
   };
 
   // Função para salvar a transcrição no Firestore
@@ -169,21 +122,25 @@ export default function AudioRecorder() {
 
   // Função para salvar a transcrição após finalização da gravação
   const stopRecording = async () => {
-
-    if (!Recorder) return;
-
-    // Atualizando o nome do arquivo de acordo com o uuid do usuário e o timestamp atual
-    const filename = `${user?.uid}_${Date.now()}.webm`;
-
-    // Salvando a duração do áudio
-    const durationSeconds = Math.floor(
-      (Date.now() - recordingStartTime.current) / 1000
-    );
-
-    // Utilizando a função handleSave para salvar no Firestore
     try {
-      const audioUrl = 'teste.ogg'
-      
+      // Atualizando o nome do arquivo de acordo com o uuid do usuário e o timestamp atual
+      const filename = `${user?.uid}_${Date.now()}.ogg`;
+
+      // Salvando a duração do áudio
+      const durationSeconds = Math.floor(
+        (Date.now() - recordingStartTime.current) / 1000
+      );
+
+      // Parar a gravação e obter o blob do áudio
+      const audioBlob = await stopAudioRecording();
+
+      // Upload do audio, considerando a existencia do uploadAudioFile
+      const audioURL = await uploadAudioFile(audioBlob, filename);
+
+      // Somente para testes
+      setAudioUrl(audioURL);
+
+      // Utilizando a função handleSave para salvar no Firestore
       const classRef = title;
 
       await handleSave(
@@ -200,7 +157,6 @@ export default function AudioRecorder() {
 
   return (
     <div className="flex flex-col gap-4 mb-6">
-
       {isSaving && (
         <AlertsPopups
           title="Salvando Gravação"
@@ -245,8 +201,8 @@ export default function AudioRecorder() {
         )}
       </div>
 
-      {audioURL && (
-        <audio controls src={audioURL} className="w-full max-w-md mt-2" />
+      {audioUrl && (
+        <audio controls src={audioUrl} className="w-full max-w-md mt-2" />
       )}
 
       {transcriptList.length > 0 && (
