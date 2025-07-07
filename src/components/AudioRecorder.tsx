@@ -16,7 +16,7 @@ import { formatTime } from "../utils/format";
 
 import { AlertsPopups } from "./AlertsPopups";
 
-import { useAudioRecorder } from "../hooks/useRecorder";
+import { useHeaderRecorder } from "../hooks/useHeaderRecorder";
 
 interface TranscriptLine {
   time: number; // segundos
@@ -37,7 +37,7 @@ export default function AudioRecorder() {
     stopRecording: stopAudioRecording,
     isRecording,
     audioUrl,
-  } = useAudioRecorder();
+  } = useHeaderRecorder();
 
   const [recordingDuration, setRecordingDuration] = useState(0);
 
