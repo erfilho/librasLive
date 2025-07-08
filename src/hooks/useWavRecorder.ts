@@ -5,6 +5,31 @@ const SAMPLE_RATE = 44100;
 const BUFFER_SIZE = 4096;
 const TIME_SLICE = 5000; // 5 seg
 
+const audioWorkletProcessor = `
+  class AudioRecorderProcessor extends audioWorkletProcessor {
+    constructor() {
+      super();
+      this.buffer = [];
+      this.port.onmessage = (event) => {
+        if (event.data === "getBuffer") {
+          this.port.postMessage(this.buffer);
+          this.buffer = [];
+        }
+      };
+    }
+
+    process(inputs) {
+      const input = inputs[0];
+      if (input && input[0]) {
+        this.buffer.push(new Float32Array(input[0]));
+      }
+      return true;
+    }
+  }
+
+  registerProcessor("audio-recorder-processor", AudioRecorderProcessor);
+`;
+
 export const useWavRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);
 
@@ -15,10 +40,24 @@ export const useWavRecorder = () => {
 
   const mediaStream = useRef<MediaStream | null>(null);
   const audioContext = useRef<AudioContext | null>(null);
-  const processor = useRef<ScriptProcessorNode | null>(null);
+  const workletNode = useRef<AudioWorkletNode | null>(null);
   const input = useRef<MediaStreamAudioSourceNode | null>(null);
   const bufferChunks = useRef<Float32Array[]>([]);
   const timer = useRef<NodeJS.Timeout | null>(null);
+
+  const loadAudioWorklet = async (context: AudioContext) => {
+    try {
+      const blob = new Blob([audioWorkletProcessor], {
+        type: "application/javascript",
+      });
+      const url = URL.createObjectURL(blob);
+      await context.audioWorklet.addModule(url);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error loading audio worklet: ", err);
+      throw new Error("Filed to load audio processor");
+    }
+  };
 
   const floatTo16bitPCM = (floatBuffer: Float32Array): Int16Array => {
     const output = new Int16Array(floatBuffer.length);
@@ -70,9 +109,11 @@ export const useWavRecorder = () => {
   };
 
   const flushChunk = async (): Promise<void> => {
-    if (bufferChunks.current.length === 0) return;
+    if (!workletNode.current || bufferChunks.current.length === 0) return;
 
     try {
+      workletNode.current.port.postMessage("getBuffer");
+
       const currentChunks = [...bufferChunks.current];
       bufferChunks.current = [];
 
@@ -97,6 +138,7 @@ export const useWavRecorder = () => {
     if (isRecording) return false;
 
     try {
+      setError(null);
       setChunks([]);
       setAudioUrl("");
 
@@ -115,22 +157,24 @@ export const useWavRecorder = () => {
         sampleRate: SAMPLE_RATE,
       });
 
+      await loadAudioWorklet(audioContext.current);
+
       input.current = audioContext.current.createMediaStreamSource(
         mediaStream.current
       );
-      processor.current = audioContext.current.createScriptProcessor(
-        BUFFER_SIZE,
-        1,
-        1
+      workletNode.current = new AudioWorkletNode(
+        audioContext.current,
+        "audio-recorder-processor"
       );
 
-      processor.current.onaudioprocess = (event) => {
-        const channelData = event.inputBuffer.getChannelData(0);
-        bufferChunks.current.push(new Float32Array(channelData));
+      workletNode.current.port.onmessage = (event) => {
+        if (event.data && event.data.length) {
+          bufferChunks.current.push(...event.data);
+        }
       };
 
-      input.current.connect(processor.current);
-      processor.current.connect(audioContext.current.destination);
+      input.current.connect(workletNode.current);
+      workletNode.current.connect(audioContext.current.destination);
 
       timer.current = setInterval(() => {
         flushChunk().catch(console.error);
@@ -148,37 +192,41 @@ export const useWavRecorder = () => {
     }
   };
 
-  const stopRecording = async (): Promise<Blob | null> => {
-    if (!isRecording) return null;
+  const stopRecording = async (): Promise<Blob> => {
+    // BUG: i need to resolve it, useRecorder works
+    return new Promise((resolve, reject) => {
+      if (!isRecording) return;
 
-    try {
-      if (timer.current) {
-        clearInterval(timer.current);
-        timer.current = null;
+      try {
+        if (timer.current) {
+          clearInterval(timer.current);
+          timer.current = null;
+        }
+
+        flushChunk();
+
+        const fullBlob =
+          chunks.length > 0
+            ? new Blob(chunks, { type: "audio/wav" })
+            : encodeWav(bufferChunks.current);
+
+        setAudioUrl(URL.createObjectURL(fullBlob));
+        return fullBlob;
+      } catch (err) {
+        console.error("Error stopping recording: ", err);
+        setError("Falha ao parar a gravação!");
+        return null;
+      } finally {
+        cleanup();
+        setIsRecording(false);
       }
-      await flushChunk();
-
-      const fullBlob =
-        chunks.length > 0
-          ? new Blob(chunks, { type: "audio/wav" })
-          : encodeWav(bufferChunks.current);
-
-      setAudioUrl(URL.createObjectURL(fullBlob));
-      return fullBlob;
-    } catch (err) {
-      console.error("Error stopping recording: ", err);
-      setError("Falha ao parar a gravação!");
-      return null;
-    } finally {
-      cleanup();
-      setIsRecording(false);
-    }
+    });
   };
 
   const cleanup = (): void => {
-    if (processor.current) {
-      processor.current.disconnect();
-      processor.current = null;
+    if (workletNode.current) {
+      workletNode.current.disconnect();
+      workletNode.current = null;
     }
 
     if (input.current) {

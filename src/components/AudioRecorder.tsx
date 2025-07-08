@@ -16,7 +16,7 @@ import { formatTime } from "../utils/format";
 
 import { AlertsPopups } from "./AlertsPopups";
 
-import { useHeaderRecorder } from "../hooks/useHeaderRecorder";
+import { useWavRecorder } from "../hooks/useWavRecorder";
 
 interface TranscriptLine {
   time: number; // segundos
@@ -37,7 +37,7 @@ export default function AudioRecorder() {
     stopRecording: stopAudioRecording,
     isRecording,
     audioUrl,
-  } = useHeaderRecorder();
+  } = useWavRecorder();
 
   const [recordingDuration, setRecordingDuration] = useState(0);
 
@@ -159,37 +159,37 @@ export default function AudioRecorder() {
         />
       )}
 
-      <label className="block text-lg font-bold mb-1">
+      <label className="block mb-1 text-lg font-bold">
         {" "}
         Título da gravação{" "}
       </label>
       <input
         type="text"
         placeholder="Título da gravação"
-        className="w-full rounded-lg p-2 text-black mb-4"
+        className="w-full p-2 mb-4 text-black rounded-lg"
         onChange={(e) => setTitle(e.target.value)}
       />
 
-      <div className="flex items-center justify-start gap-2 mb-4 w-full">
+      <div className="flex items-center justify-start w-full gap-2 mb-4">
         {isRecording ? (
-          <div className="flex items-center justify-between gap-2 w-full">
+          <div className="flex items-center justify-between w-full gap-2">
             <button
-              className="bg-white hover:bg-red-300 text-black px-4 py-2 rounded flex items-center justify-center gap-2 w-1/4"
+              className="flex items-center justify-center w-1/4 gap-2 px-4 py-2 text-black bg-white rounded hover:bg-red-300"
               onClick={stopRecording}
             >
-              <StopIcon className="h-5 w-5" />
+              <StopIcon className="w-5 h-5" />
               Parar
             </button>
-            <p className="text-lg font-mono text-slate-100">
+            <p className="font-mono text-lg text-slate-100">
               Duração: {formatTime(recordingDuration)}
             </p>
           </div>
         ) : (
           <button
-            className="bg-white hover:bg-green-300 text-black px-4 py-2 rounded flex items-center justify-center gap-2 w-1/4"
+            className="flex items-center justify-center w-1/4 gap-2 px-4 py-2 text-black bg-white rounded hover:bg-green-300"
             onClick={startRecording}
           >
-            <MicrophoneIcon className="h-5 w-5" />
+            <MicrophoneIcon className="w-5 h-5" />
             Iniciar
           </button>
         )}
@@ -200,8 +200,8 @@ export default function AudioRecorder() {
       )}
 
       {transcriptList.length > 0 && (
-        <div className="bg-blue-300  rounded py-1 px-4 max-w-3/4 h-3/5">
-          <h3 className="text-lg font-semibold mb-2">Transcrição:</h3>
+        <div className="px-4 py-1 bg-blue-300 rounded max-w-3/4 h-3/5">
+          <h3 className="mb-2 text-lg font-semibold">Transcrição:</h3>
           <ul className="space-y-1 text-gray-700 text-md">
             {transcriptList.map((line, index) => (
               <li key={index}>
