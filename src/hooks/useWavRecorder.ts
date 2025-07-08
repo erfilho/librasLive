@@ -1,4 +1,3 @@
-import { write } from "fs";
 import { useEffect, useRef, useState } from "react";
 import { transcribeText } from "../services/speechService";
 

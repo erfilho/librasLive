@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 
-const TIME_SLICE = 5000;
-
 export const useAudioRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState<String | null>(null);
@@ -31,7 +29,7 @@ export const useAudioRecorder = () => {
         if (event.data.size > 0) {
           setAudioChunks((prev) => [...prev, event.data]);
 
-          // manda o chunk para o backend
+          // TODO: manda o chunk para o backend para ser processado
           // sendtoBack(event.data)
         }
       };

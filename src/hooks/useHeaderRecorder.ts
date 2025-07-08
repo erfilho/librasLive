@@ -39,6 +39,7 @@ export const useHeaderRecorder = () => {
         return;
       }
 
+      // BUG: sempre o chunk irá com o primeiro áudio de 5s
       const combined = new Blob([headerBufRef.current, event.data]);
 
       await sendChunk(combined);
