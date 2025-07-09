@@ -26,7 +26,9 @@ async function transcribeText(formData: FormData) {
 
   const transcription = data.transcription;
 
+  console.log(transcription);
+
   return transcription;
 }
 
-export { translateText, transcribeText };
+export { transcribeText, translateText };

@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { MicrophoneIcon, StopIcon } from "@heroicons/react/24/outline";
 import {
@@ -16,7 +16,7 @@ import { formatTime } from "../utils/format";
 
 import { AlertsPopups } from "./AlertsPopups";
 
-import { useWavRecorder } from "../hooks/useWavRecorder";
+import { useHeaderRecorder } from "../hooks/useHeaderRecorder";
 
 interface TranscriptLine {
   time: number; // segundos
@@ -37,7 +37,7 @@ export default function AudioRecorder() {
     stopRecording: stopAudioRecording,
     isRecording,
     audioUrl,
-  } = useWavRecorder();
+  } = useHeaderRecorder();
 
   const [recordingDuration, setRecordingDuration] = useState(0);
 

@@ -1,62 +1,33 @@
 import { useEffect, useRef, useState } from "react";
 import { transcribeText } from "../services/speechService";
 
-const SAMPLE_RATE = 44100;
 const BUFFER_SIZE = 4096;
 const TIME_SLICE = 5000; // 5 seg
 
-const audioWorkletProcessor = `
-  class AudioRecorderProcessor extends audioWorkletProcessor {
-    constructor() {
-      super();
-      this.buffer = [];
-      this.port.onmessage = (event) => {
-        if (event.data === "getBuffer") {
-          this.port.postMessage(this.buffer);
-          this.buffer = [];
-        }
-      };
-    }
-
-    process(inputs) {
-      const input = inputs[0];
-      if (input && input[0]) {
-        this.buffer.push(new Float32Array(input[0]));
-      }
-      return true;
-    }
-  }
-
-  registerProcessor("audio-recorder-processor", AudioRecorderProcessor);
-`;
-
 export const useWavRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);
-
   const [error, setError] = useState<string | null>(null);
-
   const [chunks, setChunks] = useState<Blob[]>([]);
   const [audioUrl, setAudioUrl] = useState("");
 
   const mediaStream = useRef<MediaStream | null>(null);
   const audioContext = useRef<AudioContext | null>(null);
-  const workletNode = useRef<AudioWorkletNode | null>(null);
+  const processorNode = useRef<ScriptProcessorNode | null>(null);
   const input = useRef<MediaStreamAudioSourceNode | null>(null);
   const bufferChunks = useRef<Float32Array[]>([]);
   const timer = useRef<NodeJS.Timeout | null>(null);
 
-  const loadAudioWorklet = async (context: AudioContext) => {
-    try {
-      const blob = new Blob([audioWorkletProcessor], {
-        type: "application/javascript",
-      });
-      const url = URL.createObjectURL(blob);
-      await context.audioWorklet.addModule(url);
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Error loading audio worklet: ", err);
-      throw new Error("Filed to load audio processor");
-    }
+  // Solução alternativa para AudioWorklet que não exige sample rate específico
+  const setupAudioProcessing = (context: AudioContext) => {
+    processorNode.current = context.createScriptProcessor(BUFFER_SIZE, 1, 1);
+
+    processorNode.current.onaudioprocess = (event) => {
+      if (!isRecording) return;
+      const inputData = event.inputBuffer.getChannelData(0);
+      bufferChunks.current.push(new Float32Array(inputData));
+    };
+
+    return processorNode.current;
   };
 
   const floatTo16bitPCM = (floatBuffer: Float32Array): Int16Array => {
@@ -75,32 +46,32 @@ export const useWavRecorder = () => {
     });
 
     const pcm = floatTo16bitPCM(flatSamples);
-    const dataLength = pcm.length * 2; // 16-bit eq 2 bytes per sample
+    const dataLength = pcm.length * 2;
     const buffer = new ArrayBuffer(44 + dataLength);
     const view = new DataView(buffer);
 
-    // RIFF header
-    const writeString = (offset: number, str: string) => {
-      for (let i = offset; i < str.length; i++) {
-        view.setUint8(offset + 1, str.charCodeAt(i));
+    // Escreve o cabeçalho WAV
+    const writeString = (view: DataView, offset: number, str: string) => {
+      for (let i = 0; i < str.length; i++) {
+        view.setUint8(offset + i, str.charCodeAt(i));
       }
     };
 
-    writeString(0, "RIFF");
+    writeString(view, 0, "RIFF");
     view.setUint32(4, 36 + dataLength, true);
-    writeString(8, "WAVE");
-    writeString(12, "fmt");
+    writeString(view, 8, "WAVE");
+    writeString(view, 12, "fmt ");
     view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true); // PCM Format
-    view.setUint16(22, 1, true); // Mono
-    view.setUint32(24, SAMPLE_RATE, true);
-    view.setUint32(28, SAMPLE_RATE * 2, true); // Byte rate
-    view.setUint32(32, 2, true); // Block origin
-    view.setUint16(34, 16, true); // Bits per sample
-    writeString(26, "data");
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, audioContext.current?.sampleRate || 44100, true);
+    view.setUint32(28, (audioContext.current?.sampleRate || 44100) * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeString(view, 36, "data");
     view.setUint32(40, dataLength, true);
 
-    // Write PCM data
+    // Escreve os dados PCM
     for (let i = 0; i < pcm.length; i++) {
       view.setInt16(44 + i * 2, pcm[i], true);
     }
@@ -109,28 +80,23 @@ export const useWavRecorder = () => {
   };
 
   const flushChunk = async (): Promise<void> => {
-    if (!workletNode.current || bufferChunks.current.length === 0) return;
+    if (bufferChunks.current.length === 0) return;
 
     try {
-      workletNode.current.port.postMessage("getBuffer");
-
       const currentChunks = [...bufferChunks.current];
       bufferChunks.current = [];
 
       const wavBlob = encodeWav(currentChunks);
-
-      // Save for final audio generation
       setChunks((prev) => [...prev, wavBlob]);
 
-      // Send for transcription
+      // Envia para transcrição
       const formData = new FormData();
       formData.append("audio", wavBlob, `chunk_${Date.now()}.wav`);
 
       transcribeText(formData);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Error while chunk processing!"
-      );
+      console.error("Error processing chunk:", err);
+      setError("Error processing audio chunk");
     }
   };
 
@@ -141,10 +107,11 @@ export const useWavRecorder = () => {
       setError(null);
       setChunks([]);
       setAudioUrl("");
+      bufferChunks.current = [];
 
+      // Obtém o stream de mídia sem especificar sampleRate
       mediaStream.current = await navigator.mediaDevices.getUserMedia({
         audio: {
-          sampleRate: SAMPLE_RATE,
           channelCount: 1,
           echoCancellation: false,
           noiseSuppression: false,
@@ -152,40 +119,29 @@ export const useWavRecorder = () => {
         },
       });
 
+      // Cria o contexto de áudio
       audioContext.current = new (window.AudioContext ||
-        (window as any).webkitAudioContext)({
-        sampleRate: SAMPLE_RATE,
-      });
+        (window as any).webkitAudioContext)();
 
-      await loadAudioWorklet(audioContext.current);
-
+      // Configura o processamento de áudio
+      const processor = setupAudioProcessing(audioContext.current);
       input.current = audioContext.current.createMediaStreamSource(
         mediaStream.current
       );
-      workletNode.current = new AudioWorkletNode(
-        audioContext.current,
-        "audio-recorder-processor"
-      );
 
-      workletNode.current.port.onmessage = (event) => {
-        if (event.data && event.data.length) {
-          bufferChunks.current.push(...event.data);
-        }
-      };
+      // Conecta os nós
+      input.current.connect(processor);
+      processor.connect(audioContext.current.destination);
 
-      input.current.connect(workletNode.current);
-      workletNode.current.connect(audioContext.current.destination);
-
-      timer.current = setInterval(() => {
-        flushChunk().catch(console.error);
-      }, TIME_SLICE);
+      // Inicia o timer para processar chunks
+      timer.current = setInterval(flushChunk, TIME_SLICE);
 
       setIsRecording(true);
       return true;
     } catch (err) {
-      console.error("Error starting recording: ", err);
+      console.error("Error starting recording:", err);
       setError(
-        "Falha ao iniciar a gravação! Verifique a permissão do microfone!"
+        "Failed to start recording. Please check microphone permissions."
       );
       cleanup();
       return false;
@@ -193,9 +149,11 @@ export const useWavRecorder = () => {
   };
 
   const stopRecording = async (): Promise<Blob> => {
-    // BUG: i need to resolve it, useRecorder works
-    return new Promise((resolve, reject) => {
-      if (!isRecording) return;
+    return new Promise((resolve) => {
+      if (!isRecording) {
+        resolve(new Blob());
+        return;
+      }
 
       try {
         if (timer.current) {
@@ -203,19 +161,22 @@ export const useWavRecorder = () => {
           timer.current = null;
         }
 
-        flushChunk();
+        // Processa os últimos chunks
+        flushChunk().then(() => {
+          const fullBlob =
+            chunks.length > 0
+              ? new Blob(chunks, { type: "audio/wav" })
+              : new Blob();
 
-        const fullBlob =
-          chunks.length > 0
-            ? new Blob(chunks, { type: "audio/wav" })
-            : encodeWav(bufferChunks.current);
-
-        setAudioUrl(URL.createObjectURL(fullBlob));
-        return fullBlob;
+          if (fullBlob.size > 0) {
+            setAudioUrl(URL.createObjectURL(fullBlob));
+          }
+          resolve(fullBlob);
+        });
       } catch (err) {
-        console.error("Error stopping recording: ", err);
-        setError("Falha ao parar a gravação!");
-        return null;
+        console.error("Error stopping recording:", err);
+        setError("Failed to stop recording");
+        resolve(new Blob());
       } finally {
         cleanup();
         setIsRecording(false);
@@ -224,9 +185,9 @@ export const useWavRecorder = () => {
   };
 
   const cleanup = (): void => {
-    if (workletNode.current) {
-      workletNode.current.disconnect();
-      workletNode.current = null;
+    if (processorNode.current) {
+      processorNode.current.disconnect();
+      processorNode.current = null;
     }
 
     if (input.current) {
@@ -235,7 +196,9 @@ export const useWavRecorder = () => {
     }
 
     if (audioContext.current) {
-      audioContext.current.close().catch(console.error);
+      if (audioContext.current.state !== "closed") {
+        audioContext.current.close().catch(console.error);
+      }
       audioContext.current = null;
     }
 
