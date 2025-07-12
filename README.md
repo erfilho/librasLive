@@ -16,7 +16,6 @@ Este projeto faz parte do Trabalho de Conclusão de Curso (TCC) de Erineldo Filh
 - **React** – Interface do usuário
 - **Tailwind CSS** – Framework visual
 - **Firebase** – Armazenamento e autenticação (se aplicável)
-- **API de Reconhecimento de Voz** – Transcrição de áudio (Google Speech-to-Text, Whisper, etc)
 - **VLibras** – Tradução do conteúdo textual para Libras
 
 ## 🛠️ Funcionalidades
