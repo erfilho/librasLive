@@ -20,7 +20,17 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
-  "include": ["src", "public/vLibras", "public/vLibras", "public/vlibras.js", "public/unity"]
+  "include": [
+    "src",
+    "public/vLibras",
+    "public/vLibras",
+    "public/vlibras.js",
+    "public/unity"
+  ]
 }
