@@ -9,6 +9,9 @@ import {
   TurnDetectionType,
 } from "@/lib/openai-realtime/types";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useNotification } from "../context/notifications/useNotification";
+
+import { AlertsPopups } from "./AlertsPopups";
 
 const defaultTranscriptionConfig: TranscriptionSessionConfig = {
   turn_detection: {
@@ -35,7 +38,8 @@ export function LiveTranscription() {
   const [clientSecret, setClientSecret] = useState<string>("");
   const [isCreatingSession, setIsCreatingSession] = useState(false);
 
-  const [error, setError] = useState<Error | null>(null);
+  const { handleError } = useNotification();
+
   const [events, setEvents] = useState<EventLogItem[]>([]);
 
   const [connected, setConnected] = useState(false);
@@ -108,7 +112,7 @@ export function LiveTranscription() {
         addEvent("conection_state_change", { state });
       },
       onError: (err) => {
-        setError(err);
+        handleError(err);
         addEvent(ServerEventType.ERROR, { error: err.message });
       },
       // Raw event acess for debugging
@@ -147,7 +151,6 @@ export function LiveTranscription() {
   const handleCreateSession = async () => {
     try {
       setIsCreatingSession(true);
-      setError(null);
 
       addEvent("session_creating", {
         config: transcriptionConfig,
@@ -169,8 +172,8 @@ export function LiveTranscription() {
       }
     } catch (err) {
       const error = err instanceof Error ? err : new Error("Unknown error");
-      setError(error);
-      addEvent(ServerEventType.ERROR, { error: error.message })
+      handleError(error);
+      addEvent(ServerEventType.ERROR, { error: error.message });
     } finally {
       setIsCreatingSession(false);
     }
@@ -180,15 +183,39 @@ export function LiveTranscription() {
     if (clientRef.current) {
       clientRef.current.disconnect();
     }
-    setClientSecret('');
+    setClientSecret("");
     setConnected(false);
-    setError(null);
-    addEvent('client_disconnected', {});
-  }
+    addEvent("client_disconnected", {});
+  };
 
   const handleClearHistory = () => {
     setTranscriptionHistory([]);
-    setCurrentTranscript('');
-    addEvent('history_cleared', {});
-  }
+    setCurrentTranscript("");
+    addEvent("history_cleared", {});
+  };
+
+  useEffect(() => {
+    if (transcriptionConfig && !connected) {
+      handleCreateSession();
+    }
+  });
+
+  return (
+    <div>
+      {isCreatingSession && (
+        <AlertsPopups
+          title="Conectando ao servidor!"
+          type="info"
+          message="Aguarde enquanto a conexão é feita."
+        />
+      )}
+      {connected && (
+        <AlertsPopups
+          title="Conectado com sucesso!"
+          type="info"
+          message="Aguarde enquanto a conexão é feita."
+        />
+      )}
+    </div>
+  );
 }
