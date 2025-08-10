@@ -21,7 +21,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 Scripts/
 lib64/
 parts/
@@ -177,5 +176,8 @@ poetry.toml
 
 # LSP config files
 pyrightconfig.json
+
+# Firebase API Settings
+src/firebaseConfig.js
 
 # End of https://www.toptal.com/developers/gitignore/api/python
