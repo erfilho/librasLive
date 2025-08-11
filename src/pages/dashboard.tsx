@@ -10,12 +10,12 @@ export default function Dashboard() {
       {/* Conteúdo principal */}
       <div className="flex-1 p-2 md:ml-16 w-[calc(100% - 4rem)]">
         {/* Botão para abrir a sidebar no mobile */}
-        <button className="md:hidden mb-4 text-gray-500">
-          <Bars3Icon className="h-6 w-6" />
+        <button className="mb-4 text-gray-500 md:hidden">
+          <Bars3Icon className="w-6 h-6" />
         </button>
 
         {/* Lista das gravações do usuário */}
-        <h1 className="text-2xl text-white font-bold mb-4 mt-12">
+        <h1 className="mt-12 mb-4 text-2xl font-bold text-white">
           {" "}
           Minhas gravações{" "}
         </h1>

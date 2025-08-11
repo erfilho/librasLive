@@ -12,6 +12,8 @@ __pycache__/
 
 # Others
 ./backend/uploads/
+.firebase/
+.firebase
 
 # Distribution / packaging
 .Python
