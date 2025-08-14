@@ -59,7 +59,7 @@ export default function Login() {
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100 min-h-dvh lg:flex-row lg:px-4 ">
       {/* Left side */}
       <div className="flex items-center justify-center w-full lg:w-1/2 lg:h-full h-1/4">
-        <div className="lg:h-1/2 h-full lg:w-3/5 xl:w-3/5 w-full !bg-sky-400 flex flex-col items-center justify-center lg:p-0 p-10 lg:rounded-3xl shadow-2xl">
+        <div className="lg:h-1/2 h-full lg:w-3/5 xl:w-3/5 w-full bg-sky-400! flex flex-col items-center justify-center lg:p-0 p-10 lg:rounded-3xl shadow-2xl">
           <img
             src={logoLibrasLive}
             alt="LibrasLive Logo"
@@ -98,7 +98,7 @@ export default function Login() {
             <input
               type="email"
               placeholder="Email"
-              className="w-3/4 px-4 py-2 placeholder-white bg-blue-400 rounded-lg focus:outline-none"
+              className="w-3/4 px-4 py-2 placeholder-white bg-blue-400 rounded-lg focus:outline-hidden"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -106,7 +106,7 @@ export default function Login() {
             <input
               type="password"
               placeholder="Senha"
-              className="w-3/4 px-4 py-2 placeholder-white bg-blue-400 rounded-lg focus:outline-none"
+              className="w-3/4 px-4 py-2 placeholder-white bg-blue-400 rounded-lg focus:outline-hidden"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               required
