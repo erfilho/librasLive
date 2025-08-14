@@ -73,6 +73,8 @@ export function LiveTranscription() {
 
   // Creates a client when clientSecret changes
   useEffect(() => {
+    let cancelled = false;
+
     if (!clientSecret) {
       clientRef.current = null;
       return;
@@ -82,7 +84,7 @@ export function LiveTranscription() {
       clientRef.current.disconnect();
     }
 
-    clientRef.current = new RealtimeClient({
+    const client = new RealtimeClient({
       clientSecret,
       realtimeUrl:
         import.meta.env.NEXT_PUBLIC_OPENAI_REALTIME_WEBRTC_URL ||
@@ -123,20 +125,27 @@ export function LiveTranscription() {
         });
       },
     });
+    clientRef.current = client;
 
     // Auto connect
     const connectClient = async () => {
       try {
         await clientRef.current!.connect();
-        addEvent("client_connected", {});
+        if (!cancelled) addEvent("client_connected", {});
       } catch (err) {
-        addEvent(ServerEventType.ERROR, {
-          error: err instanceof Error ? err.message : "Unknown error",
-        });
+        if (!cancelled)
+          addEvent(ServerEventType.ERROR, {
+            error: err instanceof Error ? err.message : "Unknown error",
+          });
       }
-      connectClient();
     };
-  }, [clientSecret, addEvent]);
+    connectClient();
+
+    return () => {
+      cancelled = true;
+      client.disconnect();
+    };
+  }, [clientSecret]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -198,7 +207,7 @@ export function LiveTranscription() {
     if (transcriptionConfig && !connected) {
       handleCreateSession();
     }
-  });
+  }, [transcriptionConfig, connected]);
 
   return (
     <div>
