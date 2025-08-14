@@ -182,4 +182,7 @@ pyrightconfig.json
 # Firebase API Settings
 src/firebaseConfig.js
 
+# Firebase cache folder
+.firebase/
+
 # End of https://www.toptal.com/developers/gitignore/api/python
