@@ -13,12 +13,12 @@ export interface ServerRealtimeClientConfig {
 
 export const defaultServerRealtimeClientConfig: ServerRealtimeClientConfig = {
   baseUrl:
-    import.meta.env.OPENAI_REALTIME_SESSION_URL ||
+    import.meta.env.VITE_OPENAI_REALTIME_SESSION_URL ||
     'https://api.openai.com/v1/realtime/sessions',
   transcriptionBaseUrl:
-    import.meta.env.OPENAI_REALTIME_TRANSCRIPTION_SESSION_URL ||
+    import.meta.env.VITE_OPENAI_REALTIME_TRANSCRIPTION_SESSION_URL ||
     'https://api.openai.com/v1/realtime/transcription_sessions',
-  apiKey: import.meta.env.OPENAI_API_KEY || '',
+  apiKey: import.meta.env.VITE_OPENAI_API_KEY || '',
 };
 
 export async function createSession(

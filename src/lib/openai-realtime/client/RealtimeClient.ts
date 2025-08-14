@@ -1,17 +1,17 @@
-import { ClientEventType } from '../types/client-events';
+import { ClientEventType } from "../types/client-events";
 import {
+  ConnectionState,
+  ContentType,
+  Item,
+  ItemType,
+  MessageRole,
+  ObjectType,
+  Response,
+  ResponseConfig,
   SessionConfig,
   TranscriptionSessionConfig,
-  ConnectionState,
-  Item,
-  ResponseConfig,
-  ItemType,
-  ContentType,
-  MessageRole,
-  Response,
-  ObjectType,
-} from '../types/core';
-import { ServerEvent, ServerEventType } from '../types/server-events';
+} from "../types/core";
+import { ServerEvent, ServerEventType } from "../types/server-events";
 
 export interface RealtimeClientConfig {
   clientSecret: string;
@@ -38,7 +38,7 @@ export interface RealtimeClientConfig {
   onTranscriptionError?: (error: Error) => void;
 }
 
-export type SessionType = 'regular' | 'transcription';
+export type SessionType = "regular" | "transcription";
 
 export class RealtimeClient {
   private config: RealtimeClientConfig;
@@ -51,7 +51,7 @@ export class RealtimeClient {
 
   constructor(config: RealtimeClientConfig) {
     this.config = config;
-    this.sessionType = config.sessionType || 'regular';
+    this.sessionType = config.sessionType || "regular";
   }
 
   private updateState(state: ConnectionState) {
@@ -60,14 +60,14 @@ export class RealtimeClient {
   }
 
   private sendEvent(event: Record<string, unknown>) {
-    if (!this.dataChannel || this.dataChannel.readyState !== 'open') {
-      throw new Error('Data channel is not open.');
+    if (!this.dataChannel || this.dataChannel.readyState !== "open") {
+      throw new Error("Data channel is not open.");
     }
     this.dataChannel.send(JSON.stringify(event));
   }
 
   private logUnhandledEvent(eventType: string, data?: unknown) {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.VITE_NODE_ENV === "development") {
       console.log(`[RealtimeClient] Unhandled ${eventType} event:`, data);
     }
   }
@@ -84,52 +84,52 @@ export class RealtimeClient {
         const sessionObject = (event.session as { object: string }).object;
         this.sessionType =
           sessionObject === ObjectType.TRANSCRIPTION_SESSION
-            ? 'transcription'
-            : 'regular';
+            ? "transcription"
+            : "regular";
         break;
       }
       case ServerEventType.RESPONSE_TEXT_DELTA: {
-        const token = event?.delta || '';
+        const token = event?.delta || "";
         this.config.onMessageToken?.(token);
         break;
       }
       case ServerEventType.RESPONSE_AUDIO_TRANSCRIPT_DELTA: {
-        const transcript = event?.delta || '';
+        const transcript = event?.delta || "";
         this.config.onAssistantTranscriptDelta?.(transcript);
         if (!this.config.onAssistantTranscriptDelta) {
-          this.logUnhandledEvent('assistant transcript delta', transcript);
+          this.logUnhandledEvent("assistant transcript delta", transcript);
         }
         break;
       }
       case ServerEventType.RESPONSE_AUDIO_TRANSCRIPT_DONE: {
-        const transcript = event?.transcript || '';
+        const transcript = event?.transcript || "";
         this.config.onAssistantTranscriptDone?.(transcript);
         if (!this.config.onAssistantTranscriptDone) {
-          this.logUnhandledEvent('assistant transcript done', transcript);
+          this.logUnhandledEvent("assistant transcript done", transcript);
         }
         break;
       }
       case ServerEventType.CONVERSATION_ITEM_INPUT_AUDIO_TRANSCRIPTION_DELTA: {
-        const transcript = event?.delta || '';
+        const transcript = event?.delta || "";
         this.config.onUserTranscriptDelta?.(transcript);
         if (!this.config.onUserTranscriptDelta) {
-          this.logUnhandledEvent('user transcript delta', transcript);
+          this.logUnhandledEvent("user transcript delta", transcript);
         }
         break;
       }
       case ServerEventType.CONVERSATION_ITEM_INPUT_AUDIO_TRANSCRIPTION_COMPLETED: {
-        const transcript = event?.transcript || '';
+        const transcript = event?.transcript || "";
         this.config.onUserTranscriptDone?.(transcript);
         if (!this.config.onUserTranscriptDone) {
-          this.logUnhandledEvent('user transcript done', transcript);
+          this.logUnhandledEvent("user transcript done", transcript);
         }
         break;
       }
       case ServerEventType.CONVERSATION_ITEM_INPUT_AUDIO_TRANSCRIPTION_FAILED: {
-        const error = new Error(event?.error.message || 'Transcription failed');
+        const error = new Error(event?.error.message || "Transcription failed");
         this.config.onTranscriptionError?.(error);
         if (!this.config.onTranscriptionError) {
-          this.logUnhandledEvent('transcription error', error.message);
+          this.logUnhandledEvent("transcription error", error.message);
         }
         break;
       }
@@ -154,7 +154,7 @@ export class RealtimeClient {
         break;
       }
       case ServerEventType.ERROR: {
-        const error = new Error(event?.error.message || 'Unknown server error');
+        const error = new Error(event?.error.message || "Unknown server error");
         this.config.onError?.(error);
         break;
       }
@@ -165,7 +165,7 @@ export class RealtimeClient {
   }
 
   private handleRemoteAudio(stream: MediaStream) {
-    const audio = document.createElement('audio');
+    const audio = document.createElement("audio");
     audio.autoplay = true;
     audio.srcObject = stream;
     document.body.appendChild(audio); // optionally append to DOM
@@ -188,7 +188,7 @@ export class RealtimeClient {
       this.pc.addTrack(stream.getTracks()[0]);
 
       // Set up data channel
-      const label = this.config.dataChannelLabel || 'oai-events';
+      const label = this.config.dataChannelLabel || "oai-events";
       this.dataChannel = this.pc.createDataChannel(label);
       this.dataChannel.onmessage = (ev) => {
         this.handleServerEvent(JSON.parse(ev.data));
@@ -196,9 +196,9 @@ export class RealtimeClient {
 
       this.pc.onconnectionstatechange = () => {
         const state = this.pc!.connectionState;
-        if (['connected', 'disconnected', 'failed', 'closed'].includes(state)) {
+        if (["connected", "disconnected", "failed", "closed"].includes(state)) {
           this.updateState(
-            state === 'connected'
+            state === "connected"
               ? ConnectionState.CONNECTED
               : ConnectionState.DISCONNECTED
           );
@@ -212,14 +212,14 @@ export class RealtimeClient {
       const url = new URL(this.config.realtimeUrl);
 
       // Only set model parameter for regular sessions, not transcription sessions
-      if (this.sessionType === 'regular' && this.config.model) {
-        url.searchParams.set('model', this.config.model);
+      if (this.sessionType === "regular" && this.config.model) {
+        url.searchParams.set("model", this.config.model);
       }
 
       const resp = await fetch(url.toString(), {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/sdp',
+          "Content-Type": "application/sdp",
           Authorization: `Bearer ${this.config.clientSecret}`,
         },
         body: offer.sdp,
@@ -236,7 +236,7 @@ export class RealtimeClient {
       }
 
       const answerSdp = await resp.text();
-      await this.pc.setRemoteDescription({ type: 'answer', sdp: answerSdp });
+      await this.pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
     } catch (err) {
       this.updateState(ConnectionState.ERROR);
       this.config.onError?.(
@@ -247,8 +247,8 @@ export class RealtimeClient {
   }
 
   updateSession(config: Partial<SessionConfig>): void {
-    if (!this.dataChannel || this.dataChannel.readyState !== 'open') {
-      throw new Error('Data channel is not open.');
+    if (!this.dataChannel || this.dataChannel.readyState !== "open") {
+      throw new Error("Data channel is not open.");
     }
 
     const event = {
@@ -264,8 +264,8 @@ export class RealtimeClient {
   updateTranscriptionSession(
     config: Partial<TranscriptionSessionConfig>
   ): void {
-    if (!this.dataChannel || this.dataChannel.readyState !== 'open') {
-      throw new Error('Data channel is not open.');
+    if (!this.dataChannel || this.dataChannel.readyState !== "open") {
+      throw new Error("Data channel is not open.");
     }
 
     const event = {
@@ -324,7 +324,7 @@ export class RealtimeClient {
   ): Promise<void> {
     if (this.isTranscriptionSession()) {
       throw new Error(
-        'Text messages are not supported in transcription sessions'
+        "Text messages are not supported in transcription sessions"
       );
     }
 
@@ -351,7 +351,7 @@ export class RealtimeClient {
   async requestResponse(options?: Partial<ResponseConfig>): Promise<void> {
     if (this.isTranscriptionSession()) {
       throw new Error(
-        'AI responses are not supported in transcription sessions'
+        "AI responses are not supported in transcription sessions"
       );
     }
 
@@ -370,13 +370,13 @@ export class RealtimeClient {
   async cancelResponse(reason?: string): Promise<void> {
     if (this.isTranscriptionSession()) {
       throw new Error(
-        'AI responses are not supported in transcription sessions'
+        "AI responses are not supported in transcription sessions"
       );
     }
 
     const event = {
       type: ClientEventType.RESPONSE_CANCEL,
-      reason: reason || 'User cancelled',
+      reason: reason || "User cancelled",
     };
 
     this.sendEvent(event);
@@ -409,7 +409,7 @@ export class RealtimeClient {
   // Audio Buffer Management
   async appendAudioData(audioBase64: string): Promise<void> {
     if (!this.isDataChannelOpen()) {
-      throw new Error('Data channel is not open.');
+      throw new Error("Data channel is not open.");
     }
 
     const event = {
@@ -422,7 +422,7 @@ export class RealtimeClient {
   // Enhanced Conversation Management
   async retrieveConversationItem(itemId: string): Promise<void> {
     if (!this.isDataChannelOpen()) {
-      throw new Error('Data channel is not open.');
+      throw new Error("Data channel is not open.");
     }
 
     const event = {
@@ -434,7 +434,7 @@ export class RealtimeClient {
 
   async truncateConversationItem(audioEndMs: number): Promise<void> {
     if (!this.isDataChannelOpen()) {
-      throw new Error('Data channel is not open.');
+      throw new Error("Data channel is not open.");
     }
 
     const event = {
@@ -446,7 +446,7 @@ export class RealtimeClient {
 
   async deleteConversationItem(): Promise<void> {
     if (!this.isDataChannelOpen()) {
-      throw new Error('Data channel is not open.');
+      throw new Error("Data channel is not open.");
     }
 
     const event = {
@@ -456,10 +456,10 @@ export class RealtimeClient {
   }
 
   private isTranscriptionSession(): boolean {
-    return this.sessionType === 'transcription';
+    return this.sessionType === "transcription";
   }
 
   private isDataChannelOpen(): boolean {
-    return this.dataChannel?.readyState === 'open';
+    return this.dataChannel?.readyState === "open";
   }
 }

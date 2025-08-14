@@ -85,7 +85,7 @@ export function LiveTranscription() {
     clientRef.current = new RealtimeClient({
       clientSecret,
       realtimeUrl:
-        process.env.NEXT_PUBLIC_OPENAI_REALTIME_WEBRTC_URL ||
+        import.meta.env.NEXT_PUBLIC_OPENAI_REALTIME_WEBRTC_URL ||
         "https://api.openai.com/v1/realtime",
       sessionType: "transcription",
 
