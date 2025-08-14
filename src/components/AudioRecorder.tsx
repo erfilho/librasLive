@@ -174,7 +174,7 @@ export default function AudioRecorder() {
         {isRecording ? (
           <div className="flex items-center justify-between w-full gap-2">
             <button
-              className="flex items-center justify-center w-1/4 gap-2 px-4 py-2 text-black bg-white rounded hover:bg-red-300"
+              className="flex items-center justify-center w-1/4 gap-2 px-4 py-2 text-black bg-white rounded-sm hover:bg-red-300"
               onClick={stopRecording}
             >
               <StopIcon className="w-5 h-5" />
@@ -186,7 +186,7 @@ export default function AudioRecorder() {
           </div>
         ) : (
           <button
-            className="flex items-center justify-center w-1/4 gap-2 px-4 py-2 text-black bg-white rounded hover:bg-green-300"
+            className="flex items-center justify-center w-1/4 gap-2 px-4 py-2 text-black bg-white rounded-sm hover:bg-green-300"
             onClick={startRecording}
           >
             <MicrophoneIcon className="w-5 h-5" />
@@ -200,7 +200,7 @@ export default function AudioRecorder() {
       )}
 
       {transcriptList.length > 0 && (
-        <div className="px-4 py-1 bg-blue-300 rounded max-w-3/4 h-3/5">
+        <div className="px-4 py-1 bg-blue-300 rounded-sm max-w-3/4 h-3/5">
           <h3 className="mb-2 text-lg font-semibold">Transcrição:</h3>
           <ul className="space-y-1 text-gray-700 text-md">
             {transcriptList.map((line, index) => (

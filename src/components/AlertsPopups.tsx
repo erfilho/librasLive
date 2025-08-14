@@ -56,13 +56,13 @@ export function DeletePopup({
         <div className="flex justify-around mt-4 space-x-4">
           <button
             onClick={onConfirm}
-            className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+            className="px-4 py-2 rounded-sm bg-red-600 text-white hover:bg-red-700"
           >
             Confirmar
           </button>
           <button
             onClick={onCancel}
-            className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+            className="px-4 py-2 rounded-sm bg-blue-600 text-white hover:bg-blue-700"
           >
             Cancelar
           </button>

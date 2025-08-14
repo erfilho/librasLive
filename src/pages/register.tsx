@@ -67,7 +67,7 @@ const RegisterForm = () => {
     <div className="min-h-dvh h-screen flex items-center justify-center flex-col lg:flex-row bg-gray-100 lg:px-4">
       {/* Left side */}
       <div className="lg:w-1/2 w-full lg:h-full h-1/4 flex items-center justify-center">
-        <div className="lg:h-1/2 h-full lg:w-3/5 xl:w-3/5 w-full !bg-sky-400 flex flex-col items-center justify-center lg:p-0 p-10 lg:rounded-3xl shadow-2xl">
+        <div className="lg:h-1/2 h-full lg:w-3/5 xl:w-3/5 w-full bg-sky-400! flex flex-col items-center justify-center lg:p-0 p-10 lg:rounded-3xl shadow-2xl">
           <img
             src={logoLibrasLive}
             alt="LibrasLive Logo"
@@ -126,7 +126,7 @@ const RegisterForm = () => {
             <input
               type="email"
               placeholder="Email"
-              className="px-4 py-2 rounded-lg bg-blue-400 w-3/4 placeholder-white focus:outline-none"
+              className="px-4 py-2 rounded-lg bg-blue-400 w-3/4 placeholder-white focus:outline-hidden"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -134,7 +134,7 @@ const RegisterForm = () => {
             <input
               type="password"
               placeholder="Senha"
-              className="px-4 py-2 rounded-lg bg-blue-400 w-3/4 placeholder-white focus:outline-none"
+              className="px-4 py-2 rounded-lg bg-blue-400 w-3/4 placeholder-white focus:outline-hidden"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -142,7 +142,7 @@ const RegisterForm = () => {
             <input
               type="password"
               placeholder="Confirmar Senha"
-              className="px-4 py-2 rounded-lg bg-blue-400 w-3/4 placeholder-white focus:outline-none"
+              className="px-4 py-2 rounded-lg bg-blue-400 w-3/4 placeholder-white focus:outline-hidden"
               value={repeatPassword}
               onChange={(e) => setRepeatPassword(e.target.value)}
               required
