@@ -1,0 +1,142 @@
+@import url("https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap");
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --primary-color: dodgerblue;
+  --primary-active: #1473d3;
+  --primary-disabled: #4584c3;
+  --rounded: 6px;
+  --font: "Ubuntu", Arial, Helvetica, sans-serif;
+  --border: 2px solid var(--primary-color);
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+}
+
+h1 {
+  margin: 0;
+  margin-bottom: 32px;
+}
+
+#root {
+  width: 100vw;
+  min-height: 100vh;
+}
+
+.container {
+  width: 100%;
+  max-width: 700px;
+  padding: 32px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  background-color: #ffffff;
+}
+
+#form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.input,
+.button {
+  width: 100%;
+  padding: 10px 15px;
+  font-family: var(--font);
+  font-size: 1rem;
+  border-radius: var(--rounded);
+}
+
+.input:focus,
+.button:focus {
+  outline: none !important;
+}
+
+.input {
+  border: var(--border);
+  transition: border-color 0.2s ease-out;
+}
+
+textarea.input {
+  resize: vertical;
+  min-height: 78px;
+  max-height: 200px;
+}
+
+.input:focus {
+  border-color: var(--primary-active);
+}
+
+.button {
+  cursor: pointer;
+  background-color: var(--primary-color);
+  color: #ffffff;
+  border: none;
+  transition: background-color 0.2s ease-out;
+}
+
+.button:hover {
+  background-color: var(--primary-active);
+}
+
+.button:disabled {
+  background-color: var(--primary-disabled);
+}
+
+.content {
+  min-width: 250px;
+}
+
+#window {
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  border: var(--border);
+  border-radius: var(--rounded);
+}
+
+#wrapper {
+  min-width: 750px;
+}
+
+@media (min-width: 700px) {
+  #root {
+    padding: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f3f4f6;
+  }
+
+  .container {
+    width: initial;
+    max-width: initial;
+    grid-template-columns: 1fr 1fr;
+    border-radius: var(--rounded);
+    box-shadow: 0px 4px 15px #00000010;
+  }
+
+  .content {
+    max-width: 350px;
+  }
+}
+
+@media (min-width: 1200px) {
+  :root {
+    --rounded: 8px;
+  }
+
+  .content {
+    max-width: 450px;
+  }
+
+  #wrapper {
+    min-width: 900px;
+  }
+}
