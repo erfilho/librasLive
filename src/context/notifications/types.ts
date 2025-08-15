@@ -1,4 +1,4 @@
-export type NotificationType = "error" | "sucess";
+export type NotificationType = "error" | "sucess" | "obs";
 
 export interface Notification {
   message: string;
@@ -9,6 +9,7 @@ export interface Notification {
 export interface NotificationContextType {
   handleError: (error: unknown) => void;
   handleSucess: (message: string, title: string) => void;
+  handleObs: (message: string, title: string) => void;
 }
 
 export interface NotificationProviderProps {

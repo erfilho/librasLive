@@ -14,6 +14,7 @@ interface DeletePopupProps {
 export function AlertsPopups({ title, type, message }: AlertsPopupsProps) {
   return (
     <div className="fixed inset-0 z-50 flex justify-center items-start self-start">
+      {/* Setting type of alert by type props */}
       {type == "error" ? (
         <div
           className="p-4 my-4 text-sm flex flex-col justify-center items-center text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
@@ -24,9 +25,19 @@ export function AlertsPopups({ title, type, message }: AlertsPopupsProps) {
           </span>{" "}
           {message}
         </div>
-      ) : (
+      ) : type == "sucess" ? (
         <div
           className="p-4 my-4 text-sm flex flex-col justify-center items-center text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400"
+          role="alert"
+        >
+          <span className="font-medium">
+            {title} <br />{" "}
+          </span>{" "}
+          {message} <br />
+        </div>
+      ) : (
+        <div
+          className="p-4 my-4 text-sm flex flex-col justify-center items-center text-blue-700 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400"
           role="alert"
         >
           <span className="font-medium">

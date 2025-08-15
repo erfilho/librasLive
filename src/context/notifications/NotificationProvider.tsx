@@ -48,8 +48,12 @@ export const NotificationProvider = ({
     showNotification(message, "sucess", title);
   };
 
+  const handleObs = (message: string, title?: string) => {
+    showNotification(message, "obs", title)
+  }
+
   return (
-    <NotificationContext.Provider value={{ handleError, handleSucess }}>
+    <NotificationContext.Provider value={{ handleError, handleSucess, handleObs }}>
       {children}
       <NotificationHandler
         notification={notification}

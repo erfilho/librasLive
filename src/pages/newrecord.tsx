@@ -1,3 +1,4 @@
+import { LiveTranscription } from "@/components/LiveTranscription";
 import AudioRecorder from "../components/AudioRecorder";
 import Sidebar from "../components/Sidebar";
 
@@ -36,7 +37,7 @@ export default function NewRecord() {
         {/* Left side */}
         <div className="w-1/2 px-4 mt-12 ml-16">
           <h1 className="mb-2 text-2xl font-bold">Nova transcrição</h1>
-
+          <LiveTranscription />
           <AudioRecorder />
           <textarea
             className="w-full p-2 text-black border"

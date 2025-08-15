@@ -38,7 +38,7 @@ export function LiveTranscription() {
   const [clientSecret, setClientSecret] = useState<string>("");
   const [isCreatingSession, setIsCreatingSession] = useState(false);
 
-  const { handleError } = useNotification();
+  const { handleError, handleObs, handleSucess } = useNotification();
 
   const [events, setEvents] = useState<EventLogItem[]>([]);
 
@@ -111,6 +111,7 @@ export function LiveTranscription() {
       },
       onConnectionStateChange: (state) => {
         setConnected(state === "connected");
+        handleSucess("Conexão bem sucedida!", "Conectado ao servidor!");
         addEvent("conection_state_change", { state });
       },
       onError: (err) => {
@@ -160,6 +161,7 @@ export function LiveTranscription() {
   const handleCreateSession = async () => {
     try {
       setIsCreatingSession(true);
+      handleObs("Aguarde enquanto a conexão é feita!", "Conectando ao servidor!");
 
       addEvent("session_creating", {
         config: transcriptionConfig,
@@ -211,20 +213,6 @@ export function LiveTranscription() {
 
   return (
     <div>
-      {isCreatingSession && (
-        <AlertsPopups
-          title="Conectando ao servidor!"
-          type="info"
-          message="Aguarde enquanto a conexão é feita."
-        />
-      )}
-      {connected && (
-        <AlertsPopups
-          title="Conectado com sucesso!"
-          type="info"
-          message="Aguarde enquanto a conexão é feita."
-        />
-      )}
     </div>
   );
 }
