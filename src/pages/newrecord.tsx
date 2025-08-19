@@ -39,8 +39,9 @@ export default function NewRecord() {
           <h1 className="mb-2 text-2xl font-bold">Nova transcrição</h1>
           <LiveTranscription />
           <AudioRecorder />
+          {/* Remove this after works */}
           <textarea
-            className="w-full p-2 text-black border"
+            className="w-full p-2 text-black border bg-white"
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Digite seu texto aqui"

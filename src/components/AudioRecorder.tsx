@@ -166,7 +166,7 @@ export default function AudioRecorder() {
       <input
         type="text"
         placeholder="Título da gravação"
-        className="w-full p-2 mb-4 text-black rounded-lg"
+        className="w-full p-2 mb-4 text-black rounded-lg bg-white"
         onChange={(e) => setTitle(e.target.value)}
       />
 

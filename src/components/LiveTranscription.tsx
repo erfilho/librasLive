@@ -213,6 +213,7 @@ export function LiveTranscription() {
 
   return (
     <div>
+      <p> This is the LiveTranscription module, and it's not working right now!</p>
     </div>
   );
 }
