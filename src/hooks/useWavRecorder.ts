@@ -1,5 +1,5 @@
+import { transcribeText } from "@/services/speechService";
 import { useEffect, useRef, useState } from "react";
-import { transcribeText } from "../services/speechService";
 
 const BUFFER_SIZE = 4096;
 const TIME_SLICE = 5000; // 5 seg

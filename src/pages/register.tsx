@@ -1,8 +1,8 @@
+import logoLibrasLive from "@/assets/LibrasLive.png";
 import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
-import logoLibrasLive from "../assets/LibrasLive.png";
 
-import { handleGoogleLogin, registerUser } from "../utils/auth";
+import { handleGoogleLogin, registerUser } from "@/utils/auth";
 import { useNavigate } from "react-router-dom";
 
 const RegisterForm = () => {

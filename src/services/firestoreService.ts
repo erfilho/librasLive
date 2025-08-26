@@ -1,21 +1,21 @@
-import { app, db } from "../firebase";
 import {
-  collection,
   addDoc,
-  Timestamp,
-  doc,
+  collection,
   deleteDoc,
+  doc,
   getDocs,
   query,
+  Timestamp,
   where,
 } from "firebase/firestore";
+import { app, db } from "@/lib/firebase";
 
 import {
+  deleteObject,
+  getDownloadURL,
   getStorage,
   ref,
   uploadBytes,
-  getDownloadURL,
-  deleteObject,
 } from "firebase/storage";
 
 export interface AudioTranscription {

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { AlertsPopups } from "./AlertsPopups";
 
-import type { Notification } from "../context/notifications/types";
+import type { Notification } from "@/context/notifications/types";
 
 interface NotificationHandlerProps {
   notification: Notification | null;

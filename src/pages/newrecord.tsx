@@ -1,10 +1,10 @@
-import { LiveTranscription } from "@/components/LiveTranscription";
-import AudioRecorder from "../components/AudioRecorder";
-import Sidebar from "../components/Sidebar";
+import AudioRecorder from "@/components/recordings/AudioRecorder";
+import { LiveTranscription } from "@/components/recordings/LiveTranscription";
+import Sidebar from "@/components/ui/Sidebar";
 
 import VLibrasPlayer, {
   VLibrasPlayerHandle,
-} from "../components/VLibrasPlayer";
+} from "@/components/player/VLibrasPlayer";
 
 import { useRef, useState } from "react";
 

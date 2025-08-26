@@ -1,9 +1,9 @@
-import Sidebar from "../components/Sidebar";
 import VLibrasPlayer, {
   VLibrasPlayerHandle,
-} from "../components/VLibrasPlayer";
+} from "@/components/player/VLibrasPlayer";
+import Sidebar from "@/components/ui/Sidebar";
 
-import { LiveTranscription } from "../components/LiveTranscription";
+import { LiveTranscription } from "@/components/recordings/LiveTranscription";
 import { useRef, useState } from "react";
 
 export default function Player() {

@@ -180,7 +180,7 @@ poetry.toml
 pyrightconfig.json
 
 # Firebase API Settings
-src/firebaseConfig.js
+src/lib/firebaseConfig.js
 
 # Firebase cache folder
 .firebase/

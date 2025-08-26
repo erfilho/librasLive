@@ -1,12 +1,12 @@
 import { useState } from "react";
 
+import { NotificationHandler } from "@/components/ui/NotificationHandler";
 import { NotificationContext } from "./NotificationContext";
-import { NotificationHandler } from "../../components/NotificationHandler";
 
 import {
+  Notification,
   NotificationProviderProps,
   NotificationType,
-  Notification,
 } from "./types";
 
 export const NotificationProvider = ({
@@ -49,11 +49,13 @@ export const NotificationProvider = ({
   };
 
   const handleObs = (message: string, title?: string) => {
-    showNotification(message, "obs", title)
-  }
+    showNotification(message, "obs", title);
+  };
 
   return (
-    <NotificationContext.Provider value={{ handleError, handleSucess, handleObs }}>
+    <NotificationContext.Provider
+      value={{ handleError, handleSucess, handleObs }}
+    >
       {children}
       <NotificationHandler
         notification={notification}

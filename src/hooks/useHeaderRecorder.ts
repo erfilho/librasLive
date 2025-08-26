@@ -1,5 +1,5 @@
+import { transcribeText } from "@/services/speechService";
 import { useEffect, useRef, useState } from "react";
-import { transcribeText } from "../services/speechService";
 
 const TIME_SLICE = 5000; // 5s
 const MIME_TYPE = "audio/webm; codecs=opus";

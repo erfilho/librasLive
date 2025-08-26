@@ -1,10 +1,10 @@
+import logoLibrasLive from "@/assets/LibrasLive.png";
 import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
-import logoLibrasLive from "../assets/LibrasLive.png";
 
-import { useNotification } from "../context/notifications/useNotification";
+import { useNotification } from "@/context/notifications/useNotification";
 
-import { handleGoogleLogin, loginUser } from "../utils/auth";
+import { handleGoogleLogin, loginUser } from "@/utils/auth";
 
 import { useNavigate } from "react-router-dom";
 

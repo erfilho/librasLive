@@ -9,9 +9,9 @@ import {
   TurnDetectionType,
 } from "@/lib/openai-realtime/types";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNotification } from "../context/notifications/useNotification";
+import { useNotification } from "@/context/notifications/useNotification";
 
-import { AlertsPopups } from "./AlertsPopups";
+import { AlertsPopups } from "@/components/ui/AlertsPopups";
 
 const defaultTranscriptionConfig: TranscriptionSessionConfig = {
   turn_detection: {
