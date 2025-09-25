@@ -181,6 +181,7 @@ pyrightconfig.json
 
 # Firebase API Settings
 src/lib/firebaseConfig.js
+src/firebaseConfig.js
 
 # Firebase cache folder
 .firebase/

@@ -1,12 +1,12 @@
 import { Route, Routes } from "react-router-dom";
 
-import Dashboard from "../../pages/Dashboard";
-import Login from "../../pages/Login";
-import NewRecord from "../../pages/NewRecord";
-import NotFound from "../../pages/NotFound";
-import Player from "../../pages/Player";
-import Register from "../../pages/Register";
-import Settings from "../../pages/Settings";
+import Dashboard from "../../pages/dashboard";
+import Login from "../../pages/login";
+import NewRecord from "../../pages/newrecord";
+import NotFound from "../../pages/notfound";
+import Player from "../../pages/player";
+import Register from "../../pages/register";
+import Settings from "../../pages/settings";
 
 import PrivateRoute from "./PrivateRoute";
 
